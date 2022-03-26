@@ -111,8 +111,11 @@ public class Server {
                             clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET +"]: Friend has been added."));
                             break;
 
-                        case 3:
+                        case 2:
                             clientWriter.println(GREEN + print("[=========================================== UPDATING A FRIEND'S DETAILS ===========================================]") + RESET);
+                            break;
+
+                        case 3:
                             break;
 
                         case 4:
