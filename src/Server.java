@@ -46,6 +46,10 @@ public class Server {
                         clientWriter.print(print(""));
                     } while (choice < 0 || choice > 5);
 
+                    clientWriter.println("\033[2J");
+                    line_number = 0;
+                    clientWriter.println("\033[0;0H");
+
                     switch (choice) {
                         case 0:
                             clientWriter.print(GREEN + print("[=========================================== SEARCHING FOR FRIEND ===========================================]") + RESET);
@@ -154,5 +158,4 @@ public class Server {
         line_number++;
         return "\033[" + line_number + ";0H" + text + "\033[" + (line_number-1) + ";" + (text.length() + 2) + "H";
     }
-
 }
