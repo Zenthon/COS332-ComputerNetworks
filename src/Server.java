@@ -78,7 +78,6 @@ public class Server {
                                         clientWriter.println(print("[" + RED + "FAILURE" + RESET +"]: Friend has not been found."));
                                         clientWriter.print(print(""));
                                     }
-                                    
                                 }
                                 scanner.close();
                             }catch(FileNotFoundException e){
