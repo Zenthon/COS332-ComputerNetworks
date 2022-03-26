@@ -1,5 +1,6 @@
 import java.net.*;
 import java.io.*;
+import java.util.Scanner;
 
 public class Server {
     public static int line_number = 2;
@@ -13,7 +14,7 @@ public class Server {
         // Database operations
         String [] options = {"    0. Search a Friend", "    1. Add a Friend", "    2. Update Friend's Details", "    3. Delete a Friend", "    4. List Friends", "    5. Exit"};
         int choice = -1;
-        String details = "", name ="", surname= "", telephone_number = "";
+        String details, name, surname, telephone_number;
 
         ServerSocket sever_socket = null;
         while (true) {
@@ -71,14 +72,11 @@ public class Server {
 
                             } while (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+"));
 
-
                             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
                             bufferedWriter.write(name + ", " + surname + ", " + telephone_number);
                             bufferedWriter.newLine();
                             bufferedWriter.close();
-
                             clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET +"]: Friend has been added."));
-                            clientWriter.println(print(""));
                             break;
 
                         case 3:
@@ -87,8 +85,14 @@ public class Server {
 
                         case 4:
                             clientWriter.println(GREEN + print("[=========================================== LIST OF ALL THE FRIENDS ===========================================]") + RESET);
-                            clientWriter.println("NAME, SURNAME, TELEPHONE");
+                            clientWriter.println(print("NAME, SURNAME, TELEPHONE"));
 
+                            Scanner scanner = new Scanner(new File("Database.txt"));
+                            while (scanner.hasNextLine()) {
+                                String text = scanner.nextLine();
+                                clientWriter.println(print(text));
+                            }
+                            scanner.close();
                             break;
 
                         case 5:
@@ -96,6 +100,7 @@ public class Server {
                             System.out.println("Closing Connection");
                             break;
                     }
+                    clientWriter.println(print(""));
                 }
 
                 clientWriter.close();
