@@ -1,1 +1,5 @@
-# COS-332---Computer-Networks-2022-
+# COS332 Computer Networks 2022
+## Contributors
+> > > Muziwandile Ndlovu
+
+> > > Isheanesu Joseph Dzingirai
