@@ -1,6 +1,7 @@
 import java.net.*;
 import java.util.Scanner;
 import java.io.*;
+import java.util.Scanner;
 
 public class Server {
     public static int line_number = 2;
@@ -14,7 +15,7 @@ public class Server {
         // Database operations
         String [] options = {"    0. Search a Friend", "    1. Add a Friend", "    2. Update Friend's Details", "    3. Delete a Friend", "    4. List Friends", "    5. Exit"};
         int choice = -1;
-        String details = "";
+        String details, name, surname, telephone_number;
 
         ServerSocket sever_socket = null;
         while (true) {
@@ -86,15 +87,29 @@ public class Server {
 
                         case 1:
                             clientWriter.println(GREEN + print("[=========================================== ADDING A FRIEND ===========================================]") + RESET);
-                            clientWriter.println(print("Please enter the name, surname and telephone number separated by a space of your friend: "));
-                            details = clientReader.readLine();
-                            System.out.println(details);
+                            do {
+                                clientWriter.println(print("Name of Friend: "));
+                                name = clientReader.readLine();
+                                System.out.println(name);
+                                clientWriter.println(print("Surname of Friend: "));
+                                surname = clientReader.readLine();
+                                System.out.println(surname);
+                                clientWriter.println(print("Telephone Number of Friend: "));
+                                telephone_number = clientReader.readLine();
+                                System.out.println(telephone_number);
+
+                                if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+")) {
+                                    clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: Could not add friend because the name / surname is not alpha or the telephone is not numeric."));
+                                    clientWriter.println(print(""));
+                                }
+
+                            } while (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+"));
+
                             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
-                            bufferedWriter.write(details.replace(" ", ", "));
+                            bufferedWriter.write(name + ", " + surname + ", " + telephone_number);
                             bufferedWriter.newLine();
                             bufferedWriter.close();
                             clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET +"]: Friend has been added."));
-                            clientWriter.println(print(""));
                             break;
 
                         case 3:
@@ -103,8 +118,14 @@ public class Server {
 
                         case 4:
                             clientWriter.println(GREEN + print("[=========================================== LIST OF ALL THE FRIENDS ===========================================]") + RESET);
-                            clientWriter.println("NAME, SURNAME, TELEPHONE");
+                            clientWriter.println(print("NAME, SURNAME, TELEPHONE"));
 
+                            Scanner scanner = new Scanner(new File("Database.txt"));
+                            while (scanner.hasNextLine()) {
+                                String text = scanner.nextLine();
+                                clientWriter.println(print(text));
+                            }
+                            scanner.close();
                             break;
 
                         case 5:
@@ -112,6 +133,7 @@ public class Server {
                             System.out.println("Closing Connection");
                             break;
                     }
+                    clientWriter.println(print(""));
                 }
 
                 clientWriter.close();
@@ -123,7 +145,6 @@ public class Server {
             }
         }
     }
-
 
 
 
