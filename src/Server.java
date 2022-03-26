@@ -91,6 +91,9 @@ public class Server {
         }
     }
 
+
+
+
     public static String print(String text) {
         line_number++;
         return "\033[" + line_number + ";0H" + text + "\033[" + (line_number-1) + ";" + (text.length() + 2) + "H";
