@@ -1,4 +1,5 @@
 import java.net.*;
+import java.util.Scanner;
 import java.io.*;
 
 public class Server {
@@ -49,6 +50,38 @@ public class Server {
                             clientWriter.print(GREEN + print("[=========================================== SEARCHING FOR FRIEND ===========================================]") + RESET);
                             clientWriter.println(print("Please enter the name and surname / telephone number of the person you are looking for: "));
                             details = clientReader.readLine();
+                            File file  = new File("Database.txt");
+                            int lineNum = 0;
+                            try{
+                                Scanner scanner = new Scanner(file);
+                                while(scanner.hasNextLine()){
+                                    String line = scanner.nextLine();
+                                    lineNum++;
+                                    boolean Found = false;
+                                    String[] words=line.split(", ");  //Split the word using space
+                                    for (String word : words) 
+                                    {
+                                        if (word.equals(details))
+                                        {
+                                            clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET +"]: Friend has been found."));
+                                            clientWriter.println(print(line));
+                                            clientWriter.print(print(""));
+                                            Found = true;
+                                            break;
+                                        }  
+                                    }
+                                    if(Found == true){
+                                        break;
+                                    }
+                                    if(!scanner.hasNextLine()){
+                                        clientWriter.println(print("[" + RED + "FAILURE" + RESET +"]: Friend has not been found."));
+                                        clientWriter.print(print(""));
+                                    }
+                                    
+                                }
+                                scanner.close();
+                            }catch(FileNotFoundException e){
+                            }
                             break;
 
                         case 1:
