@@ -1,7 +1,7 @@
 import java.net.*;
 import java.util.Scanner;
 import java.io.*;
-import java.util.Scanner;
+
 
 public class Server {
     public static int line_number = 2;
@@ -10,17 +10,19 @@ public class Server {
     public static final String RESET = "\u001B[0m";
     public static final String RED = "\u001B[31m";
     public static final String BLUE = "\u001B[34m";
-
+    public static PrintWriter clientWriter = null;
+    public static BufferedReader clientReader = null;
+    public static String details ,name, surname, telephone_number;
+    public static boolean Found = false;
     public static void main(String[] args) {
         // Database operations
         String [] options = {"    0. Search a Friend", "    1. Add a Friend", "    2. Update Friend's Details", "    3. Delete a Friend", "    4. List Friends", "    5. Exit"};
         int choice = -1;
-        String details, name, surname, telephone_number;
 
         ServerSocket sever_socket = null;
         while (true) {
             try {
-                sever_socket = new ServerSocket(55550);
+                sever_socket = new ServerSocket(55556);
                 if (isStart) System.out.println("Server has started.");
                 if (isStart) System.out.println("Waiting for client....");
                 Socket socket = sever_socket.accept();
@@ -29,8 +31,8 @@ public class Server {
                 // To stop the printing above
                 isStart = false;
 
-                PrintWriter clientWriter = new PrintWriter(socket.getOutputStream(), true);                         //  To write to the client
-                BufferedReader clientReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));           //  To read from client
+                clientWriter = new PrintWriter(socket.getOutputStream(), true);                         //  To write to the client
+                clientReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));           //  To read from client
                 clientWriter.println("WELCOME TO MUZI AND ISHEANESU'S SERVER");
 
                 while (choice != 5) {
@@ -45,63 +47,24 @@ public class Server {
                         System.out.println(choice);
                         clientWriter.print(print(""));
                     } while (choice < 0 || choice > 5);
-
+                    clientWriter.println("\033[2J");
+                    line_number = 0;
+                    clientWriter.println("\033[0;0H");
                     switch (choice) {
                         case 0:
                             clientWriter.print(GREEN + print("[=========================================== SEARCHING FOR FRIEND ===========================================]") + RESET);
                             clientWriter.println(print("Please enter the name and surname / telephone number of the person you are looking for: "));
-                            details = clientReader.readLine();
-                            File file  = new File("Database.txt");
-                            int lineNum = 0;
-                            try{
-                                Scanner scanner = new Scanner(file);
-                                while(scanner.hasNextLine()){
-                                    String line = scanner.nextLine();
-                                    lineNum++;
-                                    boolean Found = false;
-                                    String[] words=line.split(", ");  //Split the word using space
-                                    for (String word : words) 
-                                    {
-                                        if (word.equals(details))
-                                        {
-                                            clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET +"]: Friend has been found."));
-                                            clientWriter.println(print(line));
-                                            clientWriter.print(print(""));
-                                            Found = true;
-                                            break;
-                                        }  
-                                    }
-                                    if(Found == true){
-                                        break;
-                                    }
-                                    if(!scanner.hasNextLine()){
-                                        clientWriter.println(print("[" + RED + "FAILURE" + RESET +"]: Friend has not been found."));
-                                        clientWriter.print(print(""));
-                                    }
-                                }
-                                scanner.close();
-                            }catch(FileNotFoundException e){
-                            }
+                            search();
                             break;
 
                         case 1:
                             clientWriter.println(GREEN + print("[=========================================== ADDING A FRIEND ===========================================]") + RESET);
                             do {
-                                clientWriter.println(print("Name of Friend: "));
-                                name = clientReader.readLine();
-                                System.out.println(name);
-                                clientWriter.println(print("Surname of Friend: "));
-                                surname = clientReader.readLine();
-                                System.out.println(surname);
-                                clientWriter.println(print("Telephone Number of Friend: "));
-                                telephone_number = clientReader.readLine();
-                                System.out.println(telephone_number);
-
+                                prompt();
                                 if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+")) {
                                     clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: Could not add friend because the name / surname is not alpha or the telephone is not numeric."));
                                     clientWriter.println(print(""));
                                 }
-
                             } while (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+"));
 
                             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
@@ -113,6 +76,35 @@ public class Server {
 
                         case 2:
                             clientWriter.println(GREEN + print("[=========================================== UPDATING A FRIEND'S DETAILS ===========================================]") + RESET);
+                            clientWriter.println(print("Please enter the name and surname / telephone number of the person you want to update: "));
+                            String response = search();
+                            System.out.println(response);
+                            if(response==null){
+                                break;
+                            }
+                            else{
+                                clientWriter.println(print("Please enter the updated Record: "));
+                                do {
+                                    prompt();
+                                    if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+")) {
+                                        clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: Could not add friend because the name / surname is not alpha or the telephone is not numeric."));
+                                        clientWriter.println(print(""));
+                                    }
+                                } while (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+"));
+                                String Record = name + ", " + surname + ", " + telephone_number;
+                                Scanner sc = new Scanner(new File("Database.txt"));
+                                StringBuffer buffer = new StringBuffer();
+                                while (sc.hasNextLine()) {
+                                    buffer.append(sc.nextLine()+System.lineSeparator());
+                                }
+                                String fileContents = buffer.toString();
+                                System.out.println("Contents of the file: "+fileContents);
+                                sc.close();
+                                fileContents = fileContents.replaceAll(response, Record );
+                                FileWriter writer = new FileWriter("Database.txt");
+                                writer.append(fileContents);
+                                writer.flush();
+                            }
                             break;
 
                         case 3:
@@ -153,6 +145,54 @@ public class Server {
     public static String print(String text) {
         line_number++;
         return "\033[" + line_number + ";0H" + text + "\033[" + (line_number-1) + ";" + (text.length() + 2) + "H";
+    }
+    public static String search() throws IOException{
+        details = clientReader.readLine();
+        File file  = new File("Database.txt");
+        String line = null;
+        int lineNum = 0;
+        try{
+            Scanner scanner = new Scanner(file);
+            while(scanner.hasNextLine()){
+                line = scanner.nextLine();
+                lineNum++;
+                
+                String[] words=line.split(", ");  //Split the word using space
+                for (String word : words) 
+                {
+                    if (word.equals(details))
+                    {
+                        clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET +"]: Friend has been found."));
+                        clientWriter.println(print(line));
+                        clientWriter.print(print(""));
+                        Found = true;
+                        break;
+                    }  
+                }
+                if(Found == true){
+                    break;
+                }
+                if(!scanner.hasNextLine()){
+                    line = null;
+                    clientWriter.println(print("[" + RED + "FAILURE" + RESET +"]: Friend has not been found."));
+                    clientWriter.print(print(""));
+                }
+            }
+            scanner.close();
+        }catch(FileNotFoundException e){
+        }
+        return line;
+    }
+    public static void prompt() throws IOException{
+        clientWriter.println(print("Name of Friend: "));
+        name = clientReader.readLine();
+        System.out.println(name);
+        clientWriter.println(print("Surname of Friend: "));
+        surname = clientReader.readLine();
+        System.out.println(surname);
+        clientWriter.println(print("Telephone Number of Friend: "));
+        telephone_number = clientReader.readLine();
+        System.out.println(telephone_number);
     }
 
 }
