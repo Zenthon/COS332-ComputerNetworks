@@ -1,5 +1,5 @@
 import java.net.*;
-import java.util.Scanner;
+import java.util.*;
 import java.io.*;
 
 
@@ -47,9 +47,11 @@ public class Server {
                         System.out.println(choice);
                         clientWriter.print(print(""));
                     } while (choice < 0 || choice > 5);
+                  
                     clientWriter.println("\033[2J");
                     line_number = 0;
                     clientWriter.println("\033[0;0H");
+                  
                     switch (choice) {
                         case 0:
                             clientWriter.print(GREEN + print("[=========================================== SEARCHING FOR FRIEND ===========================================]") + RESET);
@@ -59,19 +61,18 @@ public class Server {
 
                         case 1:
                             clientWriter.println(GREEN + print("[=========================================== ADDING A FRIEND ===========================================]") + RESET);
-                            do {
-                                prompt();
-                                if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+")) {
-                                    clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: Could not add friend because the name / surname is not alpha or the telephone is not numeric."));
-                                    clientWriter.println(print(""));
-                                }
-                            } while (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+"));
-
-                            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
-                            bufferedWriter.write(name + ", " + surname + ", " + telephone_number);
-                            bufferedWriter.newLine();
-                            bufferedWriter.close();
-                            clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET +"]: Friend has been added."));
+                            prompt();
+                            if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+")) {
+                                clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: Could not add friend because the name / surname is not alpha or the telephone is not numeric."));
+                                clientWriter.println(print(""));
+                            }
+                            else {
+                                BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
+                                bufferedWriter.write(name + ", " + surname + ", " + telephone_number);
+                                bufferedWriter.newLine();
+                                bufferedWriter.close();
+                                clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Friend has been added."));
+                            }
                             break;
 
                         case 2:
@@ -108,23 +109,56 @@ public class Server {
                             break;
 
                         case 3:
+                            clientWriter.println(GREEN + print("[=========================================== DELETING A FRIEND ===========================================]") + RESET);
+                            clientWriter.println(print("Name of Friend: "));
+                            name = clientReader.readLine();
+                            System.out.println(name);
+                            clientWriter.println(print("Surname of Friend: "));
+                            surname = clientReader.readLine();
+
+                            List<String> database_data = new ArrayList<>();
+
+                            Scanner scanner = new Scanner(new File("Database.txt"));
+                            while (scanner.hasNextLine())
+                                database_data.add(scanner.nextLine());
+                            scanner.close();
+
+                            for (String line : database_data) {
+                                String[] line_array = line.split(", ");
+                                if (line_array[0].equalsIgnoreCase(name) && line_array[1].equalsIgnoreCase(surname)) {
+                                    database_data.remove(line);
+                                    name = line_array[0];
+                                    surname = line_array[1];
+                                }
+                            }
+
+                            new PrintWriter("Database.txt").close();
+                            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
+
+                            for (String line : database_data) {
+                                bufferedWriter.write(line);
+                                bufferedWriter.newLine();
+                                bufferedWriter.close();
+                            }
+
+                            clientWriter.println(print("[" + BLUE + "DONE" + RESET + "]: Deleted " + name + " " + surname));
                             break;
 
                         case 4:
                             clientWriter.println(GREEN + print("[=========================================== LIST OF ALL THE FRIENDS ===========================================]") + RESET);
                             clientWriter.println(print("NAME, SURNAME, TELEPHONE"));
-
-                            Scanner scanner = new Scanner(new File("Database.txt"));
-                            while (scanner.hasNextLine()) {
-                                String text = scanner.nextLine();
-                                clientWriter.println(print(text));
-                            }
+                            scanner = new Scanner(new File("Database.txt"));
+                            while (scanner.hasNextLine())
+                                clientWriter.println(print( scanner.nextLine()));
                             scanner.close();
+                            clientWriter.println(print("[" + BLUE + "DONE" + RESET + "]"));
                             break;
 
                         case 5:
-                            clientWriter.println(GREEN + print("[=========================================== EXITING AND CLOSING CONNECTION ===========================================]"));
+                            clientWriter.println(GREEN + print("[=========================================== EXITING AND CLOSING CONNECTION ===========================================]") + RESET);
                             System.out.println("Closing Connection");
+                            clientWriter.println(print("Thank you for using our services. Closing Connection!"));
+                            clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Connection closed."));
                             break;
                     }
                     clientWriter.println(print(""));
@@ -134,6 +168,7 @@ public class Server {
                 clientReader.close();
                 socket.close();
                 sever_socket.close();
+                break;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -146,6 +181,7 @@ public class Server {
         line_number++;
         return "\033[" + line_number + ";0H" + text + "\033[" + (line_number-1) + ";" + (text.length() + 2) + "H";
     }
+
     public static String search() throws IOException{
         details = clientReader.readLine();
         File file  = new File("Database.txt");
@@ -194,5 +230,4 @@ public class Server {
         telephone_number = clientReader.readLine();
         System.out.println(telephone_number);
     }
-
 }
