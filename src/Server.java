@@ -1,5 +1,5 @@
 import java.net.*;
-import java.util.Scanner;
+import java.util.*;
 import java.io.*;
 import java.util.Scanner;
 
@@ -118,12 +118,45 @@ public class Server {
                             break;
 
                         case 3:
+                            clientWriter.println(GREEN + print("[=========================================== DELETING A FRIEND ===========================================]") + RESET);
+                            clientWriter.println(print("Name of Friend: "));
+                            name = clientReader.readLine();
+                            System.out.println(name);
+                            clientWriter.println(print("Surname of Friend: "));
+                            surname = clientReader.readLine();
+
+                            List<String> database_data = new ArrayList<>();
+
+                            Scanner scanner = new Scanner(new File("Database.txt"));
+                            while (scanner.hasNextLine())
+                                database_data.add(scanner.nextLine());
+                            scanner.close();
+
+                            for (String line : database_data) {
+                                String[] line_array = line.split(", ");
+                                if (line_array[0].equalsIgnoreCase(name) && line_array[1].equalsIgnoreCase(surname)) {
+                                    database_data.remove(line);
+                                    name = line_array[0];
+                                    surname = line_array[1];
+                                }
+                            }
+
+                            new PrintWriter("Database.txt").close();
+                            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
+
+                            for (String line : database_data) {
+                                bufferedWriter.write(line);
+                                bufferedWriter.newLine();
+                                bufferedWriter.close();
+                            }
+
+                            clientWriter.println(print("[" + BLUE + "DONE" + RESET + "]: Deleted " + name + " " + surname));
                             break;
 
                         case 4:
                             clientWriter.println(GREEN + print("[=========================================== LIST OF ALL THE FRIENDS ===========================================]") + RESET);
                             clientWriter.println(print("NAME, SURNAME, TELEPHONE"));
-                            Scanner scanner = new Scanner(new File("Database.txt"));
+                            scanner = new Scanner(new File("Database.txt"));
                             while (scanner.hasNextLine())
                                 clientWriter.println(print( scanner.nextLine()));
                             scanner.close();
