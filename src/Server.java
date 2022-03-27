@@ -10,10 +10,12 @@ public class Server {
     public static final String RESET = "\u001B[0m";
     public static final String RED = "\u001B[31m";
     public static final String BLUE = "\u001B[34m";
+
     public static PrintWriter clientWriter = null;
     public static BufferedReader clientReader = null;
     public static String details ,name, surname, telephone_number;
     public static boolean Found = false;
+
     public static void main(String[] args) {
         // Database operations
         String [] options = {"    0. Search a Friend", "    1. Add a Friend", "    2. Update Friend's Details", "    3. Delete a Friend", "    4. List Friends", "    5. Exit"};
@@ -32,7 +34,7 @@ public class Server {
                 isStart = false;
 
                 clientWriter = new PrintWriter(socket.getOutputStream(), true);                         //  To write to the client
-                clientReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));           //  To read from client
+                clientReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));              //  To read from client
                 clientWriter.println("WELCOME TO MUZI AND ISHEANESU'S SERVER");
 
                 while (choice != 5) {
@@ -62,10 +64,10 @@ public class Server {
                         case 1:
                             clientWriter.println(GREEN + print("[=========================================== ADDING A FRIEND ===========================================]") + RESET);
                             prompt();
-                            if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+")) {
+                            if (contains())
+                                clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: " + name + " " + surname + " already exits / telephone number is already used by someone else."));
+                            else if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+"))
                                 clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: Could not add friend because the name / surname is not alpha or the telephone is not numeric."));
-                                clientWriter.println(print(""));
-                            }
                             else {
                                 BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
                                 bufferedWriter.write(name + ", " + surname + ", " + telephone_number);
@@ -115,9 +117,9 @@ public class Server {
                             System.out.println(name);
                             clientWriter.println(print("Surname of Friend: "));
                             surname = clientReader.readLine();
+                            System.out.println(surname);
 
                             List<String> database_data = new ArrayList<>();
-
                             Scanner scanner = new Scanner(new File("Database.txt"));
                             while (scanner.hasNextLine())
                                 database_data.add(scanner.nextLine());
@@ -219,6 +221,7 @@ public class Server {
         }
         return line;
     }
+
     public static void prompt() throws IOException{
         clientWriter.println(print("Name of Friend: "));
         name = clientReader.readLine();
@@ -229,5 +232,16 @@ public class Server {
         clientWriter.println(print("Telephone Number of Friend: "));
         telephone_number = clientReader.readLine();
         System.out.println(telephone_number);
+    }
+
+    public static boolean contains() throws IOException{
+        Scanner scanner = new Scanner(new File("Database.txt"));
+        String line;
+        while (scanner.hasNextLine()) {
+            line = scanner.nextLine().toLowerCase();
+            if ((line.contains(name.toLowerCase()) && line.contains(surname.toLowerCase())) || (line.toLowerCase()).contains(telephone_number))
+                return true;
+        }
+        return false;
     }
 }
