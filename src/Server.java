@@ -123,19 +123,18 @@ public class Server {
                         case 4:
                             clientWriter.println(GREEN + print("[=========================================== LIST OF ALL THE FRIENDS ===========================================]") + RESET);
                             clientWriter.println(print("NAME, SURNAME, TELEPHONE"));
-
                             Scanner scanner = new Scanner(new File("Database.txt"));
-                            while (scanner.hasNextLine()) {
-                                String text = scanner.nextLine();
-                                clientWriter.println(print(text));
-                            }
+                            while (scanner.hasNextLine())
+                                clientWriter.println(print( scanner.nextLine()));
                             scanner.close();
+                            clientWriter.println(print("[" + BLUE + "DONE" + RESET + "]"));
                             break;
 
                         case 5:
-                            clientWriter.println(GREEN + print("[=========================================== EXITING AND CLOSING CONNECTION ===========================================]"));
+                            clientWriter.println(GREEN + print("[=========================================== EXITING AND CLOSING CONNECTION ===========================================]") + RESET);
                             System.out.println("Closing Connection");
-                            sever_socket.close();
+                            clientWriter.println(print("Thank you for using our services. Closing Connection!"));
+                            clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Connection closed."));
                             break;
                     }
                     clientWriter.println(print(""));
