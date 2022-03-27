@@ -53,7 +53,10 @@ public class Server {
                             choice = Integer.parseInt(str_choice);
                             System.out.println(choice);
                         }
-                        System.out.println(str_choice);
+                        else {
+                            choice = -1;
+                            System.out.println(str_choice);
+                        }
                     } while (choice < 0 || choice > 5);
                   
                     clientWriter.println("\033[2J");
