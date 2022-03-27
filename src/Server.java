@@ -6,6 +6,7 @@ import java.io.*;
 public class Server {
     public static int line_number = 2;
     public static boolean isStart = true;
+
     public static final String GREEN = "\u001B[32m";
     public static final String RESET = "\u001B[0m";
     public static final String RED = "\u001B[31m";
@@ -28,7 +29,7 @@ public class Server {
                 if (isStart) System.out.println("Server has started.");
                 if (isStart) System.out.println("Waiting for client....");
                 Socket socket = sever_socket.accept();
-                if (isStart) System.out.println("Client Accepted!") ;
+                if (isStart) System.out.println("Client Connected!") ;
 
                 // To stop the printing above
                 isStart = false;
