@@ -1,3 +1,6 @@
+// Isheanesu Joseph Dzingirai - u20536951
+// Muziwandile Ndlovu - u20469366
+
 import java.net.*;
 import java.util.*;
 import java.io.*;
@@ -45,9 +48,12 @@ public class Server {
                     //  Read choice
                     do {
                         clientWriter.println(print("Choice:"));
-                        choice = Integer.parseInt(clientReader.readLine());
-                        System.out.println(choice);
-                        clientWriter.print(print(""));
+                        String str_choice = clientReader.readLine();
+                        if (str_choice.matches("[0-9]+")) {
+                            choice = Integer.parseInt(str_choice);
+                            System.out.println(choice);
+                        }
+                        System.out.println(str_choice);
                     } while (choice < 0 || choice > 5);
                   
                     clientWriter.println("\033[2J");
