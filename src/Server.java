@@ -2,7 +2,6 @@ import java.net.*;
 import java.util.*;
 import java.io.*;
 
-
 public class Server {
     public static int line_number = 2;
     public static boolean isStart = true;
@@ -22,7 +21,7 @@ public class Server {
         ServerSocket sever_socket = null;
         while (true) {
             try {
-                sever_socket = new ServerSocket(55556);
+                sever_socket = new ServerSocket(55558);
                 if (isStart) System.out.println("Server has started.");
                 if (isStart) System.out.println("Waiting for client....");
                 Socket socket = sever_socket.accept();
@@ -79,7 +78,6 @@ public class Server {
                             clientWriter.println(GREEN + print("[=========================================== UPDATING A FRIEND'S DETAILS ===========================================]") + RESET);
                             clientWriter.println(print("Please enter the name and surname / telephone number of the person you want to update: "));
                             String response = search();
-                            System.out.println(response);
                             if(response==null){
                                 break;
                             }
