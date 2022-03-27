@@ -90,29 +90,27 @@ public class Server {
 
                         case 1:
                             clientWriter.println(GREEN + print("[=========================================== ADDING A FRIEND ===========================================]") + RESET);
-                            do {
-                                clientWriter.println(print("Name of Friend: "));
-                                name = clientReader.readLine();
-                                System.out.println(name);
-                                clientWriter.println(print("Surname of Friend: "));
-                                surname = clientReader.readLine();
-                                System.out.println(surname);
-                                clientWriter.println(print("Telephone Number of Friend: "));
-                                telephone_number = clientReader.readLine();
-                                System.out.println(telephone_number);
+                            clientWriter.println(print("Name of Friend: "));
+                            name = clientReader.readLine();
+                            System.out.println(name);
+                            clientWriter.println(print("Surname of Friend: "));
+                            surname = clientReader.readLine();
+                            System.out.println(surname);
+                            clientWriter.println(print("Telephone Number of Friend: "));
+                            telephone_number = clientReader.readLine();
+                            System.out.println(telephone_number);
 
-                                if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+")) {
-                                    clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: Could not add friend because the name / surname is not alpha or the telephone is not numeric."));
-                                    clientWriter.println(print(""));
-                                }
-
-                            } while (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+"));
-
-                            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
-                            bufferedWriter.write(name + ", " + surname + ", " + telephone_number);
-                            bufferedWriter.newLine();
-                            bufferedWriter.close();
-                            clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET +"]: Friend has been added."));
+                            if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+")) {
+                                clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: Could not add friend because the name / surname is not alpha or the telephone is not numeric."));
+                                clientWriter.println(print(""));
+                            }
+                            else {
+                                BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
+                                bufferedWriter.write(name + ", " + surname + ", " + telephone_number);
+                                bufferedWriter.newLine();
+                                bufferedWriter.close();
+                                clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Friend has been added."));
+                            }
                             break;
 
                         case 2:
@@ -137,6 +135,7 @@ public class Server {
                         case 5:
                             clientWriter.println(GREEN + print("[=========================================== EXITING AND CLOSING CONNECTION ===========================================]"));
                             System.out.println("Closing Connection");
+                            sever_socket.close();
                             break;
                     }
                     clientWriter.println(print(""));
@@ -146,6 +145,7 @@ public class Server {
                 clientReader.close();
                 socket.close();
                 sever_socket.close();
+                break;
             } catch (IOException e) {
                 e.printStackTrace();
             }
