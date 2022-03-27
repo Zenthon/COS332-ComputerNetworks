@@ -197,6 +197,7 @@ public class Server {
         File file  = new File("Database.txt");
         String line = null;
         int lineNum = 0;
+        Found = false;
         try{
             Scanner scanner = new Scanner(file);
             while(scanner.hasNextLine()){
