@@ -6,9 +6,6 @@ import java.util.*;
 import java.io.*;
 
 public class Server {
-    public static int line_number = 2;
-    public static boolean isStart = true;
-
     public static final String GREEN = "\u001B[32m";
     public static final String RESET = "\u001B[0m";
     public static final String RED = "\u001B[31m";
@@ -16,7 +13,9 @@ public class Server {
 
     public static PrintWriter clientWriter = null;
     public static BufferedReader clientReader = null;
+
     public static String details ,name, surname, telephone_number;
+    public static int line_number = 2;
     public static boolean Found = false;
 
     public static void main(String[] args) {
@@ -25,16 +24,15 @@ public class Server {
         int choice = -1;
 
         ServerSocket sever_socket = null;
-        while (true) {
-            try {
-                sever_socket = new ServerSocket(55558);
-                if (isStart) System.out.println("Server has started.");
-                if (isStart) System.out.println("Waiting for client....");
-                Socket socket = sever_socket.accept();
-                if (isStart) System.out.println("Client Connected!") ;
+        try {
+            sever_socket = new ServerSocket(55558);
+            System.out.println("Server has started.");
+            System.out.println("Waiting for client....");
 
-                // To stop the printing above
-                isStart = false;
+            Socket socket = sever_socket.accept();
+            System.out.println("Client Connected!") ;
+
+            while (true) {
 
                 clientWriter = new PrintWriter(socket.getOutputStream(), true);                         //  To write to the client
                 clientReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));              //  To read from client
@@ -52,17 +50,16 @@ public class Server {
                         if (str_choice.matches("[0-9]+")) {
                             choice = Integer.parseInt(str_choice);
                             System.out.println(choice);
-                        }
-                        else {
+                        } else {
                             choice = -1;
                             System.out.println(str_choice);
                         }
                     } while (choice < 0 || choice > 5);
-                  
+
                     clientWriter.println("\033[2J");
                     line_number = 0;
                     clientWriter.println("\033[0;0H");
-                  
+
                     switch (choice) {
                         case 0:
                             clientWriter.print(GREEN + print("[=========================================== SEARCHING FOR FRIEND ===========================================]") + RESET);
@@ -90,10 +87,9 @@ public class Server {
                             clientWriter.println(GREEN + print("[=========================================== UPDATING A FRIEND'S DETAILS ===========================================]") + RESET);
                             clientWriter.println(print("Please enter the name and surname / telephone number of the person you want to update: "));
                             String response = search();
-                            if(response==null){
+                            if (response == null) {
                                 break;
-                            }
-                            else{
+                            } else {
                                 clientWriter.println(print("Please enter the updated Record: "));
                                 do {
                                     prompt();
@@ -106,12 +102,12 @@ public class Server {
                                 Scanner sc = new Scanner(new File("Database.txt"));
                                 StringBuffer buffer = new StringBuffer();
                                 while (sc.hasNextLine()) {
-                                    buffer.append(sc.nextLine()+System.lineSeparator());
+                                    buffer.append(sc.nextLine() + System.lineSeparator());
                                 }
                                 String fileContents = buffer.toString();
-                                System.out.println("Contents of the file: "+fileContents);
+                                System.out.println("Contents of the file: " + fileContents);
                                 sc.close();
-                                fileContents = fileContents.replaceAll(response, Record );
+                                fileContents = fileContents.replaceAll(response, Record);
                                 FileWriter writer = new FileWriter("Database.txt");
                                 writer.append(fileContents);
                                 writer.flush();
@@ -159,7 +155,7 @@ public class Server {
                             clientWriter.println(print("NAME, SURNAME, TELEPHONE"));
                             scanner = new Scanner(new File("Database.txt"));
                             while (scanner.hasNextLine())
-                                clientWriter.println(print( scanner.nextLine()));
+                                clientWriter.println(print(scanner.nextLine()));
                             scanner.close();
                             clientWriter.println(print("[" + BLUE + "DONE" + RESET + "]"));
                             break;
@@ -179,9 +175,9 @@ public class Server {
                 socket.close();
                 sever_socket.close();
                 break;
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -203,9 +199,9 @@ public class Server {
             while(scanner.hasNextLine()){
                 line = scanner.nextLine();
                 lineNum++;
-                
+
                 String[] words=line.split(", ");  //Split the word using space
-                for (String word : words) 
+                for (String word : words)
                 {
                     if (word.equals(details))
                     {
@@ -214,7 +210,7 @@ public class Server {
                         clientWriter.print(print(""));
                         Found = true;
                         break;
-                    }  
+                    }
                 }
                 if(Found == true){
                     break;
