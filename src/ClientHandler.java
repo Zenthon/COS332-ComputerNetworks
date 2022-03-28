@@ -1,8 +1,6 @@
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 
 public class ClientHandler extends Thread {
@@ -33,9 +31,9 @@ public class ClientHandler extends Thread {
         // Database operations
         String[] options = {"    0. Search a Friend", "    1. Add a Friend", "    2. Update Friend's Details", "    3. Delete a Friend", "    4. List Friends", "    5. Exit"};
         int choice = -1;
-        clientWriter.println(MAGENTA + print("****************************************************************************************************"));
-        clientWriter.println(print("                               WELCOME TO MUZI AND ISHEANESU'S SERVER"));
-        clientWriter.println(print("****************************************************************************************************"));
+        clientWriter.println(MAGENTA + print("*************************************************************************************"));
+        clientWriter.println(print("\t\t\tWELCOME TO MUZI AND ISHEANESU'S SERVER"));
+        clientWriter.println(print("*************************************************************************************"));
         clientWriter.println(print("") + RESET);
 
         while (choice != 5) {
@@ -58,13 +56,13 @@ public class ClientHandler extends Thread {
 
             switch (choice) {
                 case 0:
-                    clientWriter.print(GREEN + print("[=========================================== SEARCHING FOR FRIEND ===========================================]") + RESET);
+                    clientWriter.print(GREEN + print("[====================================== SEARCHING FOR FRIEND ======================================]") + RESET);
                     clientWriter.println(print("Please enter the name and surname / telephone number of the person you are looking for: "));
                     search();
                     break;
 
                 case 1:
-                    clientWriter.println(GREEN + print("[=========================================== ADDING A FRIEND ===========================================]") + RESET);
+                    clientWriter.println(GREEN + print("[====================================== ADDING A FRIEND ======================================]") + RESET);
                     prompt();
                     if (contains())
                         clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: " + name + " " + surname + " already exits / telephone number is already used by someone else."));
@@ -84,7 +82,7 @@ public class ClientHandler extends Thread {
                     break;
 
                 case 2:
-                    clientWriter.println(GREEN + print("[=========================================== UPDATING A FRIEND'S DETAILS ===========================================]") + RESET);
+                    clientWriter.println(GREEN + print("[====================================== UPDATING A FRIEND'S DETAILS ======================================]") + RESET);
                     clientWriter.println(print("Please enter the name and surname / telephone number of the person you want to update: "));
                     String response = search();
                     if (response == null) {
@@ -119,7 +117,7 @@ public class ClientHandler extends Thread {
                     break;
 
                 case 3:
-                    clientWriter.println(GREEN + print("[=========================================== DELETING A FRIEND ===========================================]") + RESET);
+                    clientWriter.println(GREEN + print("[====================================== DELETING A FRIEND ======================================]") + RESET);
                     try {
                         clientWriter.println(print("Name of Friend: "));
                         name = clientReader.readLine();
@@ -161,7 +159,7 @@ public class ClientHandler extends Thread {
                     break;
 
                 case 4:
-                    clientWriter.println(GREEN + print("[=========================================== LIST OF ALL THE FRIENDS ===========================================]") + RESET);
+                    clientWriter.println(GREEN + print("[====================================== LIST OF ALL THE FRIENDS ======================================]") + RESET);
                     clientWriter.println(print("NAME, SURNAME, TELEPHONE"));
                     int numFriends = 0;
                     try {
@@ -171,17 +169,22 @@ public class ClientHandler extends Thread {
                             numFriends++;
                         }
                         scanner.close();
-                        clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Listed " + numFriends + " friends"));
+                        clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Listed " + numFriends + " friend(s)"));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     break;
 
                 case 5:
-                    clientWriter.println(GREEN + print("[=========================================== EXITING AND CLOSING CONNECTION ===========================================]") + RESET);
+                    clientWriter.println(GREEN + print("[====================================== EXITING AND CLOSING CONNECTION ======================================]") + RESET);
                     System.out.println("Closing Connection for client " + clientNumber);
                     clientWriter.println(print("Thank you for using our services. Closing Connection!"));
                     clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Connection closed."));
+                    try {
+                        socket.close();
+                    } catch (IOException e) {
+                        System.out.println("Could not close socket for client #" + clientNumber);
+                    }
                     break;
             }
             clientWriter.println(print(""));
