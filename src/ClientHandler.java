@@ -95,13 +95,13 @@ public class ClientHandler extends Thread {
                         break;
                     } else {
                         clientWriter.println(print("Please enter the updated Record: "));
-                        do {
+                
                             prompt();
                             if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || !(telephone_number.matches("[0-9]+") && telephone_number.length() == 10)) {
                                 clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: Could not add friend because the name / surname is not alpha or the telephone is not numeric."));
                                 clientWriter.println(print(""));
                             }
-                        } while (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[0-9]+"));
+                      
 
                         try {
                             String Record = name + ", " + surname + ", " + telephone_number;
