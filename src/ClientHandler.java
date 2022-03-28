@@ -1,8 +1,6 @@
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 
 public class ClientHandler extends Thread {
@@ -33,9 +31,9 @@ public class ClientHandler extends Thread {
         // Database operations
         String[] options = {"    0. Search a Friend", "    1. Add a Friend", "    2. Update Friend's Details", "    3. Delete a Friend", "    4. List Friends", "    5. Exit"};
         int choice = -1;
-        clientWriter.println(MAGENTA + print("****************************************************************************************************"));
-        clientWriter.println(print("                               WELCOME TO MUZI AND ISHEANESU'S SERVER"));
-        clientWriter.println(print("****************************************************************************************************"));
+        clientWriter.println(MAGENTA + print("*************************************************************************************"));
+        clientWriter.println(print("\t\t\tWELCOME TO MUZI AND ISHEANESU'S SERVER"));
+        clientWriter.println(print("*************************************************************************************"));
         clientWriter.println(print("") + RESET);
 
         while (choice != 5) {
@@ -58,13 +56,13 @@ public class ClientHandler extends Thread {
 
             switch (choice) {
                 case 0:
-                    clientWriter.print(GREEN + print("[=========================================== SEARCHING FOR FRIEND ===========================================]") + RESET);
+                    clientWriter.print(GREEN + print("[====================================== SEARCHING FOR FRIEND ======================================]") + RESET);
                     clientWriter.println(print("Please enter the name and surname / telephone number of the person you are looking for: "));
                     search();
                     break;
 
                 case 1:
-                    clientWriter.println(GREEN + print("[=========================================== ADDING A FRIEND ===========================================]") + RESET);
+                    clientWriter.println(GREEN + print("[====================================== ADDING A FRIEND ======================================]") + RESET);
                     prompt();
                     if (contains())
                         clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: " + name + " " + surname + " already exits / telephone number is already used by someone else."));
@@ -84,7 +82,7 @@ public class ClientHandler extends Thread {
                     break;
 
                 case 2:
-                    clientWriter.println(GREEN + print("[=========================================== UPDATING A FRIEND'S DETAILS ===========================================]") + RESET);
+                    clientWriter.println(GREEN + print("[====================================== UPDATING A FRIEND'S DETAILS ======================================]") + RESET);
                     clientWriter.println(print("Please enter the name and surname / telephone number of the person you want to update: "));
                     String response = search();
                     if (response == null) {
@@ -119,49 +117,53 @@ public class ClientHandler extends Thread {
                     break;
 
                 case 3:
-                    clientWriter.println(GREEN + print("[=========================================== DELETING A FRIEND ===========================================]") + RESET);
+                    clientWriter.println(GREEN + print("[====================================== DELETING A FRIEND ======================================]") + RESET);
                     try {
+                        Boolean found = false;
                         clientWriter.println(print("Name of Friend: "));
                         name = clientReader.readLine();
                         clientWriter.println(print("Surname of Friend: "));
                         surname = clientReader.readLine();
+                        telephone_number = "NA";
 
                         if (contains()) {
-
                             List<String> database_data = new ArrayList<>();
                             Scanner scanner = new Scanner(new File("Database.txt"));
                             while (scanner.hasNextLine())
                                 database_data.add(scanner.nextLine());
                             scanner.close();
 
-                            for (String line : database_data) {
-                                String[] line_array = line.split(", ");
-                                if (line_array[0].equalsIgnoreCase(name) && line_array[1].equalsIgnoreCase(surname)) {
-                                    database_data.remove(line);
-                                    name = line_array[0];
-                                    surname = line_array[1];
+                            for (int index = 0; index < database_data.size(); index++) {
+                                if (database_data.get(index) != "" && database_data.get(index) != null) {
+                                    String[] line_array = database_data.get(index).split(", ");
+                                    if (line_array[0].equalsIgnoreCase(name) && line_array[1].equalsIgnoreCase(surname)) {
+                                        database_data.remove(index);
+                                        name = line_array[0];
+                                        surname = line_array[1];
+                                    }
                                 }
                             }
 
                             new PrintWriter("Database.txt").close();
-                            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
+                            if (!database_data.isEmpty()) {
+                                BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
 
-                            for (String line : database_data) {
-                                bufferedWriter.write(line);
-                                bufferedWriter.newLine();
-                                bufferedWriter.close();
+                                for (String line : database_data) {
+                                    bufferedWriter.write(line);
+                                    bufferedWriter.newLine();
+                                    bufferedWriter.close();
+                                }
                             }
-
                             clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Deleted " + name + " " + surname));
-                        } else
-                            clientWriter.println(print("[" + RED + "FAILURE" + RESET + "]: Could not find " + name + " " + surname + " in the database."));
+                        }
+                        else clientWriter.println(print("[" + RED + "FAILURE" + RESET + "]: Could not find " + name + " " + surname + " in the database."));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     break;
 
                 case 4:
-                    clientWriter.println(GREEN + print("[=========================================== LIST OF ALL THE FRIENDS ===========================================]") + RESET);
+                    clientWriter.println(GREEN + print("[====================================== LIST OF ALL THE FRIENDS ======================================]") + RESET);
                     clientWriter.println(print("NAME, SURNAME, TELEPHONE"));
                     int numFriends = 0;
                     try {
@@ -171,17 +173,18 @@ public class ClientHandler extends Thread {
                             numFriends++;
                         }
                         scanner.close();
-                        clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Listed " + numFriends + " friends"));
+                        clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Listed " + numFriends + " friend(s)"));
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        System.out.println("Scanner failed to open file in case 4");
                     }
                     break;
 
                 case 5:
-                    clientWriter.println(GREEN + print("[=========================================== EXITING AND CLOSING CONNECTION ===========================================]") + RESET);
+                    clientWriter.println(GREEN + print("[====================================== EXITING AND CLOSING CONNECTION ======================================]") + RESET);
                     System.out.println("Closing Connection for client " + clientNumber);
                     clientWriter.println(print("Thank you for using our services. Closing Connection!"));
                     clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Connection closed."));
+                    try { socket.close(); } catch (IOException e) { System.out.println("Could not close socket for client #" + clientNumber); }
                     break;
             }
             clientWriter.println(print(""));
@@ -257,7 +260,7 @@ public class ClientHandler extends Thread {
             String line;
             while (scanner.hasNextLine()) {
                 line = scanner.nextLine().toLowerCase();
-                if ((line.contains(name.toLowerCase()) && line.contains(surname.toLowerCase())) || (line.toLowerCase()).contains(telephone_number))
+                if ((line.equals(name.toLowerCase()) && line.equals(surname.toLowerCase())) || (line.toLowerCase()).contains(telephone_number))
                     return true;
             }
         } catch (IOException e) {
