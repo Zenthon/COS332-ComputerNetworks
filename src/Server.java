@@ -198,7 +198,7 @@ public class Server {
             Scanner scanner = new Scanner(file);
             while(scanner.hasNextLine()){
                 line = scanner.nextLine();
-                lineNum++;
+                lineNum = lineNum + 1;
 
                 String[] words=line.split(", ");  //Split the word using space
                 for (String word : words)
