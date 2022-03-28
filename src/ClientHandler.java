@@ -47,7 +47,7 @@ public class ClientHandler extends Thread {
                 String str_choice = null;
                 try { str_choice = clientReader.readLine(); }
                 catch (IOException e) { e.printStackTrace(); }
-                choice = (str_choice.matches("[0-9]+")) ? Integer.parseInt(str_choice) :  -1;
+                choice = (str_choice.matches("[0-9]+")) ? Integer.parseInt(str_choice) : -1;
             } while (choice < 0 || choice > 5);
 
             clientWriter.println("\033[2J");
@@ -57,17 +57,23 @@ public class ClientHandler extends Thread {
             switch (choice) {
                 case 0:
                     clientWriter.print(GREEN + print("[====================================== SEARCHING FOR FRIEND ======================================]") + RESET);
-                    clientWriter.println(print("Please enter the name and surname / telephone number of the person you are looking for: "));
-                    search();
+                    sd_prompt("Please select 0 to search by name and surname or 1 to search by telephone: ");
+                    String line = contains();
+                    if (line != null)
+                        clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Friend found. Here are the details: " + line));
+                    else {
+                        String answer = !telephone_number.equals("NA") ? "Telephone number: " + telephone_number : "Name and Surname: " + (name + " " + surname);
+                        clientWriter.println(print("[" + RED + "SUCCESS" + RESET + "]: Search failed because " + answer + " is not in the database."));
+                    }
                     break;
 
                 case 1:
                     clientWriter.println(GREEN + print("[====================================== ADDING A FRIEND ======================================]") + RESET);
                     prompt();
-                    if (contains())
+                    if (contains() != null)
                         clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: " + name + " " + surname + " already exits / telephone number is already used by someone else."));
-                    else if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+"))
-                        clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: Could not add friend because the name / surname is not alpha or the telephone is not numeric."));
+                    else if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || !(telephone_number.matches("[0-9]+") && telephone_number.length() == 10))
+                        clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: Could not add friend because the name / surname is not alpha or the telephone is not numeric and 10 digits."));
                     else {
                         try {
                             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
@@ -91,11 +97,11 @@ public class ClientHandler extends Thread {
                         clientWriter.println(print("Please enter the updated Record: "));
                         do {
                             prompt();
-                            if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+")) {
+                            if (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || !(telephone_number.matches("[0-9]+") && telephone_number.length() == 10)) {
                                 clientWriter.println(print("[" + RED + "FAILED" + RESET + "]: Could not add friend because the name / surname is not alpha or the telephone is not numeric."));
                                 clientWriter.println(print(""));
                             }
-                        } while (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[a-zA-Z]+"));
+                        } while (!name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") || telephone_number.matches("[0-9]+"));
 
                         try {
                             String Record = name + ", " + surname + ", " + telephone_number;
@@ -118,48 +124,37 @@ public class ClientHandler extends Thread {
 
                 case 3:
                     clientWriter.println(GREEN + print("[====================================== DELETING A FRIEND ======================================]") + RESET);
-                    try {
-                        Boolean found = false;
-                        clientWriter.println(print("Name of Friend: "));
-                        name = clientReader.readLine();
-                        clientWriter.println(print("Surname of Friend: "));
-                        surname = clientReader.readLine();
-                        telephone_number = "NA";
-
-                        if (contains()) {
+                    sd_prompt("Please select 0 to delete by name and surname or 1 to delete by telephone: ");
+                    String delete_line = contains(), answer = !telephone_number.equals("NA") ? "Telephone number: " + telephone_number : "Name and Surname: " + (name + " " + surname);
+                    if (delete_line != null) {
+                        try {
                             List<String> database_data = new ArrayList<>();
                             Scanner scanner = new Scanner(new File("Database.txt"));
                             while (scanner.hasNextLine())
                                 database_data.add(scanner.nextLine());
                             scanner.close();
 
-                            for (int index = 0; index < database_data.size(); index++) {
-                                if (database_data.get(index) != "" && database_data.get(index) != null) {
-                                    String[] line_array = database_data.get(index).split(", ");
-                                    if (line_array[0].equalsIgnoreCase(name) && line_array[1].equalsIgnoreCase(surname)) {
-                                        database_data.remove(index);
-                                        name = line_array[0];
-                                        surname = line_array[1];
-                                    }
-                                }
-                            }
+                            for (int index = 0; index < database_data.size(); index++)
+                                if (database_data.get(index) != "" && database_data.get(index) != null && database_data.get(index).equalsIgnoreCase(delete_line))
+                                    database_data.remove(index);
 
                             new PrintWriter("Database.txt").close();
                             if (!database_data.isEmpty()) {
                                 BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
 
-                                for (String line : database_data) {
-                                    bufferedWriter.write(line);
+                                for (String l : database_data) {
+                                    bufferedWriter.write(l);
                                     bufferedWriter.newLine();
                                     bufferedWriter.close();
                                 }
                             }
-                            clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Deleted " + name + " " + surname));
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                        else clientWriter.println(print("[" + RED + "FAILURE" + RESET + "]: Could not find " + name + " " + surname + " in the database."));
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Deleted " + answer));
                     }
+                    else clientWriter.println(print("[" + RED + "FAILURE" + RESET + "]: Could not find " + answer + " in the database."));
+
                     break;
 
                 case 4:
@@ -254,18 +249,48 @@ public class ClientHandler extends Thread {
         }
     }
 
-    public boolean contains(){
+    public String contains(){
         try {
             Scanner scanner = new Scanner(new File("Database.txt"));
-            String line;
+            String line = null;
             while (scanner.hasNextLine()) {
-                line = scanner.nextLine().toLowerCase();
-                if ((line.equals(name.toLowerCase()) && line.equals(surname.toLowerCase())) || (line.toLowerCase()).contains(telephone_number))
-                    return true;
+                line = scanner.nextLine();
+                String []line_array = line.split(", ");
+                if (( (line_array[0]).equalsIgnoreCase(name) && (line_array[1]).equalsIgnoreCase(surname)) || (line_array[2]).equalsIgnoreCase(telephone_number))
+                    return line;
             }
         } catch (IOException e) {
             System.out.println("Contains function failed because could not find Database.txt");
         }
-        return false;
+        return null;
+    }
+
+    public void sd_prompt(String message) {
+        int search_choice = -1;
+        do {
+            clientWriter.println(print(message));
+            String ss = null;
+            try { ss = clientReader.readLine(); }
+            catch (IOException e) { e.printStackTrace(); }
+            search_choice = (ss.matches("[0-9]+")) ? Integer.parseInt(ss) : -1;
+        } while (search_choice < 0 || search_choice > 1);
+
+        try {
+            if (search_choice == 0) {
+                clientWriter.println(print("Name of Friend: "));
+                name = clientReader.readLine();
+                clientWriter.println(print("Surname of Friend: "));
+                surname = clientReader.readLine();
+                telephone_number = "NA";
+            }
+
+            else {
+                surname = name = "NA";
+                clientWriter.println(print("Telephone Number of Friend: "));
+                telephone_number = clientReader.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
