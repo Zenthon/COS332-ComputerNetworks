@@ -171,7 +171,7 @@ public class ClientHandler extends Thread {
                         scanner.close();
                         clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Listed " + numFriends + " friend(s)"));
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        System.out.println("Scanner failed to open file in case 4");
                     }
                     break;
 
@@ -180,11 +180,7 @@ public class ClientHandler extends Thread {
                     System.out.println("Closing Connection for client " + clientNumber);
                     clientWriter.println(print("Thank you for using our services. Closing Connection!"));
                     clientWriter.println(print("[" + BLUE + "SUCCESS" + RESET + "]: Connection closed."));
-                    try {
-                        socket.close();
-                    } catch (IOException e) {
-                        System.out.println("Could not close socket for client #" + clientNumber);
-                    }
+                    try { socket.close(); } catch (IOException e) { System.out.println("Could not close socket for client #" + clientNumber); }
                     break;
             }
             clientWriter.println(print(""));
