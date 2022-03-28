@@ -4,7 +4,6 @@ import java.io.*;
 public class Server {
     public static int client_number = 0;
 
-
     public static void main(String ...args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(55555);
         System.out.println("Server has started.");
@@ -17,7 +16,7 @@ public class Server {
             PrintWriter clientWriter = new PrintWriter(socket.getOutputStream(),true);
 
             System.out.println("Assigning new thread for client # " + client_number);
-           new ClientHandler(client_number++, socket, clientReader, clientWriter).start();
-        } while (client_number != 0);
+            new ClientHandler(socket, client_number++, clientReader, clientWriter).start();
+        } while (true);
     }
 }

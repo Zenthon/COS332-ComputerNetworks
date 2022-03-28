@@ -19,7 +19,7 @@ public class ClientHandler extends Thread {
     public int line_number = 0;
     public static boolean Found = false;
 
-    public ClientHandler(int cNumber, Socket socket, BufferedReader clientReader, PrintWriter clientWriter) {
+    public ClientHandler(Socket socket, int cNumber, BufferedReader clientReader, PrintWriter clientWriter) {
         this.clientReader = clientReader;
         this.clientWriter = clientWriter;
         this.socket = socket;
@@ -89,7 +89,7 @@ public class ClientHandler extends Thread {
 
                 case 2:
                     clientWriter.println(GREEN + print("[====================================== UPDATING A FRIEND'S DETAILS ======================================]") + RESET);
-                    clientWriter.println(print("Please enter the name and surname / telephone number of the person you want to update: "));
+                    clientWriter.println(print("Please enter the name / surname / telephone number of the person you want to update: "));
                     String response = search();
                     if (response == null) {
                         break;
