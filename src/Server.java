@@ -11,6 +11,16 @@ public class Server {
     public static OutputStream clientWriter = null;
     public static String answer = "0";
     public static String expression = "";
+    public enum StatusCode{
+        NotFound("HTTP/1.1 404 Not Found \r\n"),
+        OK("HTTP/1.1 200 OK \r\n"),
+        BadRequest("HTTP/1.1 400 Bad Request \r\n");
+        private String StatusLine;
+        private StatusCode(String statusCode){
+            this.StatusLine = statusCode;
+        }//to use this this you use StatusCode.OK.StatusLine
+
+     }
 
     public static void main(String[] args) throws Exception {
         ServerSocket serverSocket = new ServerSocket(51515);
@@ -28,20 +38,20 @@ public class Server {
             String[] reqLineArr = reqLine.split(" ");
             if (reqLineArr[0].equals("GET") && reqLineArr[2].equals("HTTP/1.1")) {
                if (reqLineArr[1].equals("/")) {
-                   response = getStatusLine(200, "OK") + getHeaders() + "\r\n";
+                   response = StatusCode.OK.StatusLine + getHeaders() + "\r\n";
                    clientWriter.write(response.getBytes());
                }
                else {
                    if (reqLineArr[1].equals("/=")) {
-                       response = getStatusLine(200, "OK") + getHeaders() + "\r\n";
+                       response = StatusCode.OK.StatusLine + getHeaders() + "\r\n";
                        answer = String.valueOf(engine.eval(expression));
                    }
                    else if (reqLineArr[1].equals("/C")){
-                       response = getStatusLine(200, "OK") + getHeaders() + "\r\n";
+                       response = StatusCode.OK.StatusLine + getHeaders() + "\r\n";
                        answer = expression = "0";
                    }
                    else {
-                       response = getStatusLine(200, "OK") + getHeaders() + "\r\n";
+                       response = StatusCode.OK.StatusLine + getHeaders() + "\r\n";
                        if (!reqLineArr[1].equals("/div"))
                            expression += reqLineArr[1].charAt(1);
                        else expression += "/";
@@ -54,17 +64,11 @@ public class Server {
             }
         }
     }
-
-    public static String getStatusLine(int statusCode, String reasonPhrase) {
-        return "HTTP/1.1 " + statusCode + " " + reasonPhrase + "\r\n";
-    }
-
     public static String getHeaders() {
         LocalDateTime currentDate = LocalDateTime.now();
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("E, MM dd yyyy HH:mm:ss");
         return "Date: " + currentDate.format(dateFormatter) + " GMT\r\n" + "Server: Muzi and Ishe's Server\r\n" + "Content-Type: text/html\r\n" + "Content-Length: 1000\r\n";
     }
-
     public static void displayCalculator() throws IOException {
         clientWriter.write("<!DOCTYPE html>".getBytes());
         clientWriter.write("<html lang=\"en\">".getBytes());
