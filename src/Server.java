@@ -24,29 +24,32 @@ public class Server {
             clientReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             clientWriter = socket.getOutputStream();
 
-            String reqLine = clientReader.readLine();
+            String reqLine = clientReader.readLine(),  response = "";
             String[] reqLineArr = reqLine.split(" ");
             if (reqLineArr[0].equals("GET") && reqLineArr[2].equals("HTTP/1.1")) {
                if (reqLineArr[1].equals("/")) {
-                   String response = getStatusLine(200, "OK") + getHeaders() + "\r\n";
+                   response = getStatusLine(200, "OK") + getHeaders() + "\r\n";
                    clientWriter.write(response.getBytes());
                }
                else {
                    if (reqLineArr[1].equals("/=")) {
+                       response = getStatusLine(200, "OK") + getHeaders() + "\r\n";
                        answer = String.valueOf(engine.eval(expression));
                    }
                    else if (reqLineArr[1].equals("/C")){
+                       response = getStatusLine(200, "OK") + getHeaders() + "\r\n";
                        answer = expression = "0";
                    }
                    else {
-                       expression += reqLineArr[1].charAt(1);
+                       response = getStatusLine(200, "OK") + getHeaders() + "\r\n";
+                       if (!reqLineArr[1].equals("/div"))
+                           expression += reqLineArr[1].charAt(1);
+                       else expression += "/";
                        answer = expression;
                    }
-
-                   String response = getStatusLine(200, "OK") + getHeaders() + "\r\n";
                    clientWriter.write(response.getBytes());
-
                }
+
                displayCalculator();
             }
         }
@@ -96,10 +99,9 @@ public class Server {
                     clientWriter.write("<td><a href =\"/0\"><button>0</button></a></td>".getBytes());
                     clientWriter.write("<td><a href =\"/C\"><button>C</button></a></td>".getBytes());
                     clientWriter.write("<td><a href =\"/=\"><button>=</button></a></td>".getBytes());
-                    clientWriter.write("<td><a href =\"//\"><button>/</button></a></td>".getBytes());
+                    clientWriter.write("<td><a href =\"div\"><button>/</button></a></td>".getBytes());
                 clientWriter.write("</tr>".getBytes());
             clientWriter.write("</table>".getBytes());
-
         clientWriter.write("</body>".getBytes());
         clientWriter.write("</html>".getBytes());
     }
