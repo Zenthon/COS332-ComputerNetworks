@@ -1,5 +1,5 @@
 default:
-	javac *.java && java Server
+	javac *.java && java HTTPServer
 
 clean:
 	rm *.class
