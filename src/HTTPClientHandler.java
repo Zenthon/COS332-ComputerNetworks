@@ -30,7 +30,6 @@ public class HTTPClientHandler extends Thread {
 
             StringTokenizer parseInput = new StringTokenizer(clientReader.readLine());
             String httpMethod = parseInput.nextToken().toUpperCase(), reqHTML = parseInput.nextToken().toUpperCase(), httpVersion = parseInput.nextToken().toUpperCase();
-            System.out.println(reqHTML);
             if (!httpMethod.equals("GET") && !httpMethod.equals("HEAD")) {
                 String message = "<!DOCTYPE html>\n" +
                                     "<html lang=\"en\">\n" +
@@ -59,23 +58,23 @@ public class HTTPClientHandler extends Thread {
                 clientWriter.write(response.getBytes());
             } else {
                 if (reqHTML.equals("/"))
-                    response = getStatusLine(200, "OK") + getHeaders(getCalulator().length()) + getCalulator();
+                    response = getStatusLine(200, "OK") + getHeaders(getCalculator().length()) + getCalculator();
                 else if (reqHTML.equals("/C")){
                     answer = "0";
                     expression = "";
-                    response = getStatusLine(200, "OK") + getHeaders(getCalulator().length()) + getCalulator();
+                    response = getStatusLine(200, "OK") + getHeaders(getCalculator().length()) + getCalculator();
                 } else if (reqHTML.equals("/=")) {
                     answer = String.valueOf(engine.eval(expression));
-                    response = answer.equals("INFINITY") ?
-                                getStatusLine(400, "Bad Request") + getHeaders(getCalulator().length() + 32) + "<p>Division by zero not allowed." + getCalulator() :
-                                getStatusLine(200, "OK") + getHeaders(getCalulator().length()) + getCalulator();
+                    response = answer.equalsIgnoreCase("INFINITY") ?
+                                getStatusLine(400, "Bad Request") + getHeaders(getCalculator().length() + 32) + "<p>Division by zero not allowed." + getCalculator() :
+                                getStatusLine(200, "OK") + getHeaders(getCalculator().length()) + getCalculator();
                 }
                 else {
-                    if (!reqHTML.equals("/div"))
+                    if (!reqHTML.equals("/DIV"))
                         expression += reqHTML.charAt(1);
                     else expression += "/";
                     answer = expression;
-                    response = getStatusLine(200, "OK") + getHeaders(getCalulator().length()) + getCalulator();
+                    response = getStatusLine(200, "OK") + getHeaders(getCalculator().length()) + getCalculator();
                 }
                 clientWriter.write(response.getBytes());
             }
@@ -98,10 +97,9 @@ public class HTTPClientHandler extends Thread {
                 "Content-Type: text/html\r\n" +
                 "Content-Length: " + contentLength + "\r\n" +
                 "\r\n";
-
     }
 
-    public String getCalulator() {
+    public String getCalculator() {
         return "<!DOCTYPE html>\n" +
                 "<html lang=\"en\">\n" +
                 "<head>\n" +
@@ -134,7 +132,7 @@ public class HTTPClientHandler extends Thread {
                 "           <td><a href =\"/0\"><button>0</button></a></td>\n" +
                 "           <td><a href =\"/C\"><button>C</button></a></td>\n" +
                 "           <td><a href =\"/=\"><button>=</button></a></td>\n" +
-                "           <td><a href =\"/div'\"><button>/</button></a></td>\n" +
+                "           <td><a href =\"/div\"><button>/</button></a></td>\n" +
                 "       </tr>\n" +
                 "   </table>\n" +
                 "</body>\n" +
