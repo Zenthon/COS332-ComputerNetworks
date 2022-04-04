@@ -13,7 +13,16 @@ public class HTTPClientHandler extends Thread {
     private BufferedReader clientReader;
     private OutputStream clientWriter;
     private static String answer = "0", response ="", expression ="";
-
+    public enum StatusCode{
+        OK("HTTP/1.1 200 OK \r\n"),
+        BadRequest("HTTP/1.1 400 Bad Request \r\n"),
+        httpVersion("HTTP/1.1 505 HTTP Version Not Supported \r\n"),
+        NotImplemented("HTTP/1.1 501 Not Implemented \r\n");
+        private String res ; 
+        private StatusCode(String response){
+            this.res = response;
+        }
+    }
     public HTTPClientHandler(Socket s) throws IOException {
         socket = s;
         clientReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -36,7 +45,7 @@ public class HTTPClientHandler extends Thread {
                                     "  Only HEAD and GET Requests are allowed\n" +
                                     "</body>\n" +
                                     "</html>";
-                String response = getStatusLine(501, "Not Implemented") + getHeaders(message.length()) + message;
+                String response = StatusCode.NotImplemented.res + getHeaders(message.length()) + message;
                 clientWriter.write(response.getBytes());
             } else if (!httpVersion.equals("HTTP/1.1")) {
                 String message = "<!DOCTYPE html>\n" +
@@ -49,27 +58,29 @@ public class HTTPClientHandler extends Thread {
                         "  Only HTTP 1.1 Is allowed\n" +
                         "</body>\n" +
                         "</html>";
-                String response = getStatusLine(505, "HTTP Version Not Supported") + getHeaders(message.length()) + message;
+                String response = StatusCode.httpVersion.res + getHeaders(message.length()) + message;
                 clientWriter.write(response.getBytes());
             } else {
                 if (reqHTML.equals("/"))
-                    response = getStatusLine(200, "OK") + getHeaders(getCalculator().length()) + getCalculator();
+                    response =  StatusCode.OK.res  + getHeaders(getCalculator().length()) + getCalculator();
                 else if (reqHTML.equals("/DEL")) {
                     StringBuffer sb = new StringBuffer(expression);
                     sb.deleteCharAt(sb.length()-1);
                     expression = answer = sb.toString();
-                    response = getStatusLine(200, "OK") + getHeaders(getCalculator().length()) + getCalculator();
+                    response =StatusCode.OK.res + getHeaders(getCalculator().length()) + getCalculator();
                 }
+
                 else if (reqHTML.equals("/C")){
                     answer = "0";
                     expression = "";
-                    response = getStatusLine(200, "OK") + getHeaders(getCalculator().length()) + getCalculator();
+                    response = StatusCode.OK.res + getHeaders(getCalculator().length()) + getCalculator();
                 } else if (reqHTML.equals("/=")) {
                     answer = "" + eval(expression);
                     response = answer.equalsIgnoreCase("INFINITY") ?
-                                getStatusLine(400, "Bad Request") + getHeaders(getCalculator().length() + 32) + "<center>Division by zero not allowed. Presss C to continue.<center>\n" + getCalculator() :
-                                getStatusLine(200, "OK") + getHeaders(getCalculator().length()) + getCalculator();
+                                StatusCode.BadRequest.res + getHeaders(getCalculator().length() + 32) + "<center>Division by zero not allowed. Presss C to continue.<center>\n" + getCalculator() :
+                                StatusCode.OK.res + getHeaders(getCalculator().length()) + getCalculator();
                     answer = "Error";
+
                 }
                 else {
                     if (Character.isDigit(reqHTML.charAt(1)))
@@ -86,7 +97,7 @@ public class HTTPClientHandler extends Thread {
 
                     }
                     answer = expression;
-                    response = getStatusLine(200, "OK") + getHeaders(getCalculator().length()) + getCalculator();
+                    response = StatusCode.OK.res + getHeaders(getCalculator().length()) + getCalculator();
                 }
                 clientWriter.write(response.getBytes());
             }
@@ -94,11 +105,6 @@ public class HTTPClientHandler extends Thread {
             e.printStackTrace();
         }
     }
-
-    public  String getStatusLine(int statusCode, String reasonPhrase) {
-        return "HTTP/1.1 " + statusCode + " " + reasonPhrase + "\r\n";
-    }
-
     public String getHeaders(int contentLength) {
         LocalDateTime currentDate = LocalDateTime.now();
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("E, MM dd yyyy HH:mm:ss");
@@ -108,6 +114,7 @@ public class HTTPClientHandler extends Thread {
                 "Server: Muzi and Ishe's Server\r\n" +
                 "Content-Type: text/html\r\n" +
                 "Content-Length: " + contentLength + "\r\n" +
+                "Connection: keep-alive\r\n" +
                 "\r\n";
     }
 
