@@ -6,17 +6,15 @@ import java.net.*;
 import java.util.*;
 
 public class HTTPServer {
-    public static int client_number = 1;
 
     public static void main(String[] args) {
         try {
-            ServerSocket serverSocket = new ServerSocket(51515);
-            System.out.println("Server running on : " + 51515);
+            ServerSocket serverSocket = new ServerSocket(50505);
+            System.out.println("Server running on : " + 50505);
             System.out.println("Waiting for client....");
 
             while (true) {
                 Socket socket = serverSocket.accept();
-                System.out.println("Client " + socket.getInetAddress().getHostAddress() + "] connected!");
                 new HTTPClientHandler(socket).start();
             }
         } catch (IOException e) {
