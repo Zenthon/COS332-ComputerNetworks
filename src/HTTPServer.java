@@ -14,8 +14,8 @@ public class HTTPServer {
     public static void main(String[] args) {
         System.out.print("\033[H\033[2J");
         try {
-            ServerSocket serverSocket = new ServerSocket(50505);
-            System.out.println("Server running on : " + 50505);
+            ServerSocket serverSocket = new ServerSocket(52525);
+            System.out.println("Server running on : " + 52525);
             System.out.println("Waiting for client....");
 
             while (true) {

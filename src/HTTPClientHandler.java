@@ -70,7 +70,10 @@ public class HTTPClientHandler extends Thread {
             } else if (reqHTML.equalsIgnoreCase("/favicon.ico")) {
                 response = StatusCode.OK.res + getHeaders(getCalculator().length()) + getCalculator();
                 clientWriter.write(response.getBytes());
-            }
+            }else if(httpMethod.equals("HEAD")){
+                response = StatusCode.OK.res + getHeaders(getCalculator().length());
+                clientWriter.write(response.getBytes());
+            } 
             else {
                 if (reqHTML.equals("/") )
                     response = StatusCode.OK.res + getHeaders(getCalculator().length()) + getCalculator();
