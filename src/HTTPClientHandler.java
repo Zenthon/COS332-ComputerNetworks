@@ -85,15 +85,15 @@ public class HTTPClientHandler extends Thread {
 
                 else if (reqHTML.equals("/AC")){
                     answer = "0";
-                    expression = "";
+                    expression = answer;
                     response = StatusCode.OK.res + getHeaders(getCalculator().length()) + getCalculator();
                 } else if (reqHTML.equals("/=")) {
                     answer = String.valueOf(Double.parseDouble(engine.eval(expression).toString()));
-                    if (answer.equals("-2147483648"))
+                    if (answer.equalsIgnoreCase("Infinity"))
                         answer = "Error";
                     expression = answer;
                     response = answer.equals("Error") ?
-                                StatusCode.BadRequest.res + getHeaders(getCalculator().length() + 32) + "<center>Division by zero not allowed. Presss C to continue.<center>\n" + getCalculator() :
+                                StatusCode.OK.res + getHeaders(getCalculator().length() + 32) + "<center>Division by zero not allowed. Press AC to continue.<center>\n" + getCalculator() :
                                 StatusCode.OK.res + getHeaders(getCalculator().length()) + getCalculator();
                 }
                 else {
