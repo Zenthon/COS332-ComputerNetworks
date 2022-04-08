@@ -5,7 +5,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.io.*;
 import java.net.*;
-import java.util.*;
+
 
 public class HTTPServer {
     static ScriptEngineManager manager = new ScriptEngineManager();
@@ -13,8 +13,10 @@ public class HTTPServer {
 
     public static void main(String[] args) {
         System.out.print("\033[H\033[2J");
+        ServerSocket serverSocket = null;
+
         try {
-            ServerSocket serverSocket = new ServerSocket(52525);
+            serverSocket = new ServerSocket(52525);
             System.out.println("Server running on : " + 52525);
             System.out.println("Waiting for client....");
 
@@ -24,6 +26,12 @@ public class HTTPServer {
             }
         } catch (IOException e) {
            e.printStackTrace();
+        } finally {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
