@@ -31,7 +31,7 @@ public class ClientHandler extends Thread {
     public static final String BLUE = "\u001B[34m";
     public static final String MAGENTA = "\u001b[35m";
 
-    public static String name, surname, telephone_number;
+    public String name, surname, telephone_number;
     public int line_number = 0;
 
     public ClientHandler(Socket socket) throws IOException {
@@ -124,9 +124,8 @@ public class ClientHandler extends Thread {
 
                 // 1. Search Friend
                 else if (postParameters.contains("search")) {
-                    String line,
-                    fail = "<h2 style=\"color: red\">[FAILED]: Search failed because Name:" + name + " Surname: " + surname + " Number: " + telephone_number + " is not in the database.</h2>\n";
-
+                    extractParameters(postParameters);
+                    String fail = "<h2 style=\"color: red\">[FAILED]: Search failed because friend details are not in the database</h2>";
                     if (telephone_number.matches("0[0-9]{9}") || telephone_number.equals("") || (!name.equals("") && !surname.equals(""))) {
                         Scanner sc = new Scanner(new File("Database.txt"));
                         while (sc.hasNextLine()) {
