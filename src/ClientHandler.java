@@ -25,16 +25,7 @@ public class ClientHandler extends Thread {
     public final Socket socket;
     public final BufferedReader clientReader;
     public final OutputStream clientWriter;
-    public int clientNumber;
-
-    public static final String GREEN = "\u001B[32m";
-    public static final String RESET = "\u001B[0m";
-    public static final String RED = "\u001B[31m";
-    public static final String BLUE = "\u001B[34m";
-    public static final String MAGENTA = "\u001b[35m";
-
     public String name, surname, telephone_number;
-    public int line_number = 0;
 
     public ClientHandler(Socket socket) throws IOException {
         this.clientReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -139,11 +130,10 @@ public class ClientHandler extends Thread {
                                 break;
                             }
                         }
-                        
                         sc.close();
                     }
-
                     response = StatusCode.OK.res + getHeaders(indexPage().length() + fail.length()) + (indexPage() + fail);
+                    clientWriter.write(response.getBytes());
                 }
                 else if (postParameters.contains("update")) {
                     String [] searchFields = postParameters.split("&");
