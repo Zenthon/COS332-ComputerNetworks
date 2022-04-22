@@ -31,15 +31,13 @@ public class ClientHandler extends Thread {
     public static final String BLUE = "\u001B[34m";
     public static final String MAGENTA = "\u001b[35m";
 
-    public static String details, name, surname, telephone_number;
+    public String name, surname, telephone_number;
     public int line_number = 0;
-    public static boolean Found = false;
 
-    public ClientHandler(Socket socket, int cNumber) throws IOException {
+    public ClientHandler(Socket socket) throws IOException {
         this.clientReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.clientWriter = socket.getOutputStream();
         this.socket = socket;
-        this.clientNumber = cNumber;
     }
 
     @Override
@@ -56,7 +54,7 @@ public class ClientHandler extends Thread {
                         "    <title>Error 400</title>\n" +
                         "</head>\n" +
                         "<body>\n" +
-                        "  Socket Is Closed.\n" +
+                        "  Bad Request: Socket Is Closed.\n" +
                         "</body>\n" +
                         "</html>";
                 response = StatusCode.BadRequest.res + getHeaders(message.length()) + message;
@@ -124,22 +122,15 @@ public class ClientHandler extends Thread {
                     socket.close();
                 }
 
+                // 1. Search Friend
                 else if (postParameters.contains("search")) {
-                    String [] searchFields = postParameters.split("&");
-                    String fname = searchFields[0].split("=").length == 2 ? (searchFields[0].split("="))[1] : "",
-                            lname = searchFields[1].split("=").length == 2 ? (searchFields[1].split("="))[1] : "",
-                            number = searchFields[2].split("=").length == 2 ? (searchFields[2].split("="))[1] : "",
-                            fail = "<h2 style=\"color: red\">[FAILED]: Search failed because Name:" + fname + " Surname: " + lname + " Number: " + number + " is not in the database.</h2>\n",
-                            line = null;
-
-                    if ((!number.equals("") && number.matches("0[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")) || (!fname.equals("") && !lname.equals(""))) {
+                    extractParameters(postParameters);
+                    String fail = "<h2 style=\"color: red\">[FAILED]: Search failed because friend details are not in the database</h2>";
+                    if (telephone_number.matches("0[0-9]{9}") || telephone_number.equals("") || (!name.equals("") && !surname.equals(""))) {
                         Scanner sc = new Scanner(new File("Database.txt"));
                         while (sc.hasNextLine()) {
-
-                            line = sc.nextLine();
-                            System.out.println(line);
-                            String []line_array = line.split(", ");
-                            if (( (line_array[0]).equalsIgnoreCase(fname) && (line_array[1]).equalsIgnoreCase(lname)) || (line_array[2]).equalsIgnoreCase(number)) {
+                            String []line_array = (sc.nextLine()).split(", ");
+                            if (((line_array[0]).equalsIgnoreCase(name) && (line_array[1]).equalsIgnoreCase(surname)) || (line_array[2]).equalsIgnoreCase(telephone_number)) {
                                 String success = "<h2 style=\"color: blue\">[SUCCESS]: Friend found. Here are the details\t\tName:" + line_array[0] + ", Surname: " + line_array[1] + ", Number: " + line_array[2] + "</h2>\n";
                                 response = StatusCode.OK.res + getHeaders(indexPage().length() + success.length()) + (indexPage() + success);
                                 clientWriter.write(response.getBytes());
@@ -149,11 +140,44 @@ public class ClientHandler extends Thread {
                         sc.close();
                     }
                     response = StatusCode.OK.res + getHeaders(indexPage().length() + fail.length()) + (indexPage() + fail);
+                    clientWriter.write(response.getBytes());
+                }
+
+                // 2. Add Friend
+                else if (postParameters.contains("add")) {
+                    extractParameters(postParameters);
+
+                    if (!telephone_number.matches("0[0-9]{9}") || !name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") ) {
+                        String message = "<h2 style=\"color: red\">[FAILED]: Could not add friend because the name / surname is not alpha or the telephone is not numeric and 10 digits</h2>\n";
+                        response = StatusCode.OK.res + getHeaders(indexPage().length() + message.length()) + (indexPage() + message);
+                        clientWriter.write(response.getBytes());
+                    }
+                    else if (searchFriend()) {
+                        String message = "<h2 style=\"color: red\">[FAILED]: " + name + " " + surname + " / " + telephone_number + " already exists in the database</h2>\n";
+                        response = StatusCode.OK.res + getHeaders(indexPage().length() + message.length()) + (indexPage() + message);
+                        clientWriter.write(response.getBytes());
+                    }
+                    else {
+                        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("Database.txt", true));
+                        bufferedWriter.write(name + ", " + surname + ", " + telephone_number);
+                        bufferedWriter.newLine();
+                        bufferedWriter.close();
+                        String message = "<h1 style=\"color: blue\">[SUCCESS]: Friend has been added.";
+                        response = StatusCode.OK.res + getHeaders(indexPage().length() + message.length()) + (indexPage() + message);
+                        clientWriter.write(response.getBytes());
+                    }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void extractParameters(String postParameters) {
+        String [] searchFields = postParameters.split("&");
+        name = searchFields[0].split("=").length == 2 ? (searchFields[0].split("="))[1] : "";
+        surname = searchFields[1].split("=").length == 2 ? (searchFields[1].split("="))[1] : "";
+        telephone_number = searchFields[2].split("=").length == 2 ? (searchFields[2].split("="))[1] : "";
     }
 
     public String getHeaders(int contentLength) {
@@ -180,11 +204,11 @@ public class ClientHandler extends Thread {
                     "  <input type=\"radio\" id=\"option\" name=\"option\" value=\"2\">\n" +
                     "  <label for=\"option2\">2: Update Friend's Details</label><br>\n" +
                     "  <input type=\"radio\" id=\"option\" name=\"option\" value=\"3\">\n" +
-                    "  <label for=\"option2\">3: Delete a Friend</label><br>\n" +
+                    "  <label for=\"option3\">3: Delete a Friend</label><br>\n" +
                     "  <input type=\"radio\" id=\"option\" name=\"option\" value=\"4\">\n" +
-                    "  <label for=\"option2\">4: List Friends</label><br>\n" +
+                    "  <label for=\"option4\">4: List Friends</label><br>\n" +
                     "  <input type=\"radio\" id=\"option\" name=\"option\" value=\"5\">\n" +
-                    "  <label for=\"option2\">5: Exit</label><br>\n" +
+                    "  <label for=\"option5\">5: Exit</label><br>\n" +
                     "  <input type=\"submit\" value=\"Submit\"></center>\n" +
                 "</form>";
     }
@@ -198,11 +222,35 @@ public class ClientHandler extends Thread {
                 "  <input type=\"text\" id=\"search_lname\" name=\"search_lname\" value=\"\"><br>\n" +
                 "  <label for=\"search_number\">Telephone Number:</label>\n" +
                 "  <input type=\"text\" id=\"search_number\" name=\"search_number\" value=\"\"><br>\n" +
-                "  <input type=\"submit\" value=\"Submit\"></center>\n" +
+                "  <input type=\"submit\" class=\"btn btn-primary\" value=\"Submit\"></center>\n" +
                 "</form>";
     }
 
     public String AddFriendForm() {
-        return null;
+        return "<h2>Please enter the name, surname, and telephone number of your friend</h2>\n" +
+                "<form method=\"POST\">\n" +
+                "  <label for=\"add_fname\">First Name:</label>\n" +
+                "  <input type=\"text\" id=\"add_fname\" name=\"add_fname\" value=\"\"><br>\n" +
+                "  <label for=\"add_lname\">Last Name:</label>\n" +
+                "  <input type=\"text\" id=\"add_lname\" name=\"add_lname\" value=\"\"><br>\n" +
+                "  <label for=\"add_number\">Telephone Number:</label>\n" +
+                "  <input type=\"text\" id=\"add_number\" name=\"add_number\" value=\"\"><br>\n" +
+                "  <input type=\"submit\" class=\"btn btn-primary\" value=\"Submit\"></center>\n" +
+                "</form>";
+    }
+
+    public boolean searchFriend() throws FileNotFoundException {
+        String line;
+        Scanner sc = new Scanner(new File("Database.txt"));
+        while (sc.hasNextLine()) {
+            line = sc.nextLine();
+            String []line_array = line.split(", ");
+            if (( (line_array[0]).equalsIgnoreCase(name) && (line_array[1]).equalsIgnoreCase(surname)) || (line_array[2]).equalsIgnoreCase(telephone_number)) {
+                sc.close();
+                return true;
+            }
+        }
+        sc.close();
+        return false;
     }
 }

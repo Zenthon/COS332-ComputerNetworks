@@ -20,7 +20,7 @@ public class HTTPServer {
             PrintWriter clientWriter = new PrintWriter(socket.getOutputStream(),true);
 
             System.out.println("Assigning new thread for client # " + client_number);
-            new ClientHandler(socket, client_number++).start();
+            new ClientHandler(socket).start();
         } while (true);
     }
 }
