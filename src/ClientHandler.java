@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.io.File;
+import java.io.IOException;
 
 public class ClientHandler extends Thread {
     public enum StatusCode {
@@ -107,10 +109,10 @@ public class ClientHandler extends Thread {
                     response = StatusCode.OK.res + getHeaders(AddFriendForm().length()) + AddFriendForm();
                     clientWriter.write(response.getBytes());
                 } else if (postParameters.equals("option=2")) {
-                    response = StatusCode.OK.res + getHeaders(SearchFriendForm().length()) + SearchFriendForm();
+                    response = StatusCode.OK.res + getHeaders(UpdateFriendForm().length()) + UpdateFriendForm();
                     clientWriter.write(response.getBytes());
                 } else if (postParameters.equals("option=3")) {
-                    response = StatusCode.OK.res + getHeaders(SearchFriendForm().length()) + SearchFriendForm();
+                    response = StatusCode.OK.res + getHeaders(SearchFriendForm().length()) + DeleteFriendForm();
                     clientWriter.write(response.getBytes());
                 } else if (postParameters.equals("option=4")) {
                     response = StatusCode.OK.res + getHeaders(SearchFriendForm().length()) + SearchFriendForm();
@@ -132,6 +134,78 @@ public class ClientHandler extends Thread {
                             String []line_array = (sc.nextLine()).split(", ");
                             if (((line_array[0]).equalsIgnoreCase(name) && (line_array[1]).equalsIgnoreCase(surname)) || (line_array[2]).equalsIgnoreCase(telephone_number)) {
                                 String success = "<h2 style=\"color: blue\">[SUCCESS]: Friend found. Here are the details\t\tName:" + line_array[0] + ", Surname: " + line_array[1] + ", Number: " + line_array[2] + "</h2>\n";
+                                response = StatusCode.OK.res + getHeaders(indexPage().length() + success.length()) + (indexPage() + success);
+                                clientWriter.write(response.getBytes());
+                                break;
+                            }
+                        }
+                        
+                        sc.close();
+                    }
+
+                    response = StatusCode.OK.res + getHeaders(indexPage().length() + fail.length()) + (indexPage() + fail);
+                }
+                else if (postParameters.contains("update")) {
+                    String [] searchFields = postParameters.split("&");
+                    String fname = searchFields[0].split("=").length == 2 ? (searchFields[0].split("="))[1] : "",
+                            lname = searchFields[1].split("=").length == 2 ? (searchFields[1].split("="))[1] : "",
+                            number = searchFields[2].split("=").length == 2 ? (searchFields[2].split("="))[1] : "",
+                            fail = "<h2 style=\"color: red\">[FAILED]: Search failed because Name:" + fname + " Surname: " + lname + " Number: " + number + " is not in the database.</h2>\n",
+                            line = null;
+
+                    if ((!number.equals("") && number.matches("0[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")) || (!fname.equals("") && !lname.equals(""))) {
+                        Scanner sc = new Scanner(new File("Database.txt"));
+                        File textFile = new File("Database.txt");
+                        searchFields = postParameters.split("&");
+                        while (sc.hasNextLine()) {
+
+                            line = sc.nextLine();
+                            System.out.println(line);
+                            String []line_array = line.split(", ");
+                            if  (( (line_array[0]).equalsIgnoreCase(fname) && (line_array[1]).equalsIgnoreCase(lname)) || (line_array[2]).equalsIgnoreCase(number)) {
+                                String Original = fname + ", "+lname+ ", "+number;
+                                fname = searchFields[3].split("=").length == 2 ? (searchFields[3].split("="))[1] : "";
+                                lname = searchFields[4].split("=").length == 2 ? (searchFields[4].split("="))[1] : "";
+                                number = searchFields[5].split("=").length == 2 ? (searchFields[5].split("="))[1] : "";
+                                String myReplacement = fname + ", "+lname+ ", "+number;
+                                System.out.println(myReplacement);
+                                System.out.println(Original);
+                                BufferedReader reader = null;
+                                String Content ="";
+                                FileWriter writer = null;
+                                try
+                                {
+                                    reader = new BufferedReader(new FileReader(textFile));
+                                    String lines = reader.readLine();
+                                    while (lines != null) 
+                                    {
+                                        Content=Content + lines + System.lineSeparator();
+                                        lines = reader.readLine();
+                                    }
+                                    System.out.println(Content);
+                                    String newContent = Content.replaceAll(Original, myReplacement  );
+                                    writer = new FileWriter("Database.txt");
+                                    System.out.println(newContent);
+                                    writer.write(newContent);
+                                }
+                                catch (IOException e)
+                                {
+                                    e.printStackTrace();
+                                }
+                                finally
+                                {
+                                    try
+                                    {
+                                        reader.close();   
+                                        writer.close();
+                                    } 
+                                    catch (IOException e) 
+                                    {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                String success = "<h2 style=\"color: blue\">[SUCCESS]: Friend Updated. Here are the details\t\tName:" + fname  + ", Surname: " + lname + ", Number: " +number + "</h2>\n";
+
                                 response = StatusCode.OK.res + getHeaders(indexPage().length() + success.length()) + (indexPage() + success);
                                 clientWriter.write(response.getBytes());
                                 break;
@@ -252,5 +326,28 @@ public class ClientHandler extends Thread {
         }
         sc.close();
         return false;
+    }
+    public String UpdateFriendForm() {
+            return "<h2>Please enter the name and surname / the telephone number / both of the friend you are looking to Update Along With The updated Information:</h2>\n" +
+                "<form method=\"POST\">\n" +
+                "  <label for=\"fname\">First Name:</label>\n" +
+                "  <input type=\"text\" id=\"fname\" name=\"fname\" value=\"\"><br>\n" +
+                "  <label for=\"lname\">Last Name:</label>\n" +
+                "  <input type=\"text\" id=\"lname\" name=\"lname\" value=\"\"><br>\n" +
+                "  <label for=\"number\">Telephone Number:</label>\n" +
+                "  <input type=\"text\" id=\"number\" name=\"number\" value=\"\"><br>\n" +
+                "  <label for=\"update_fname\">First Name Update:</label>\n" +
+                "  <input type=\"text\" id=\"update_fname\" name=\"update_fname\" value=\"\"><br>\n" +
+                "  <label for=\"update_lname\">Last Name Update:</label>\n" +
+                "  <input type=\"text\" id=\"update_lname\" name=\"update_lname\" value=\"\"><br>\n" +
+                "  <label for=\"update_number\">Telephone Number Update:</label>\n" +
+                "  <input type=\"text\" id=\"update_number\" name=\"update_number\" value=\"\"><br>\n" +
+                "  <input type=\"submit\" value=\"Submit\"></center>\n" +
+                "</form>";
+    }
+
+    public String DeleteFriendForm() {
+        return null;
+
     }
 }
