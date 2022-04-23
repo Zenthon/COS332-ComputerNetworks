@@ -103,7 +103,7 @@ public class ClientHandler extends Thread {
                     response = StatusCode.OK.res + getHeaders(UpdateFriendForm().length()) + UpdateFriendForm();
                     clientWriter.write(response.getBytes());
                 } else if (postParameters.equals("option=3")) {
-                    response = StatusCode.OK.res + getHeaders(SearchFriendForm().length()) + DeleteFriendForm();
+                    response = StatusCode.OK.res + getHeaders(DeleteFriendForm().length()) + DeleteFriendForm();
                     clientWriter.write(response.getBytes());
                 } else if (postParameters.equals("option=4")) {
                     response = StatusCode.OK.res + getHeaders(SearchFriendForm().length()) + SearchFriendForm();
@@ -209,6 +209,7 @@ public class ClientHandler extends Thread {
 
                 // 2. Add Friend
                 else if (postParameters.contains("add")) {
+
                     extractParameters(postParameters);
 
                     if (!telephone_number.matches("0[0-9]{9}") || !name.matches("[a-zA-Z]+") || !surname.matches("[a-zA-Z]+") ) {
@@ -230,6 +231,51 @@ public class ClientHandler extends Thread {
                         response = StatusCode.OK.res + getHeaders(indexPage().length() + message.length()) + (indexPage() + message);
                         clientWriter.write(response.getBytes());
                     }
+                }
+                else if (postParameters.contains("delete")) {
+                    extractParameters(postParameters);
+                    String fail = "<h2 style=\"color: red\">[FAILED]: Search failed because friend details are not in the database</h2>";
+                    if (telephone_number.matches("0[0-9]{9}") || telephone_number.equals("") || (!name.equals("") && !surname.equals(""))) {
+                        Scanner sc = new Scanner(new File("Database.txt"));
+                        while (sc.hasNextLine()) {
+                            String []line_array = (sc.nextLine()).split(", ");
+                            if (((line_array[0]).equalsIgnoreCase(name) && (line_array[1]).equalsIgnoreCase(surname)) && (line_array[2]).equalsIgnoreCase(telephone_number)) {
+                                File inputFile = new File("Database.txt");
+                                File tempFile = new File("myTempFile.txt");
+                                String [] searchFields = postParameters.split("&");
+                                String fname = searchFields[0].split("=").length == 2 ? (searchFields[0].split("="))[1] : "",
+                                lname = searchFields[1].split("=").length == 2 ? (searchFields[1].split("="))[1] : "",
+                                number = searchFields[2].split("=").length == 2 ? (searchFields[2].split("="))[1] : "";
+                                BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+                                String lineToRemove = fname + ", "+lname+ ", "+number;
+                                StringBuilder sb = new StringBuilder();
+                                try (Scanner sk = new Scanner(inputFile)) {
+                                    String currentLine;
+                                    while(sk.hasNext()){
+                                        currentLine = sk.nextLine();
+                                        if(currentLine.equals(lineToRemove)){
+                                            continue; 
+                                        }
+                                        sb.append(currentLine).append("\n");
+                                    }
+                                }
+                                PrintWriter pw = new PrintWriter(inputFile);
+                                pw.close();
+                                writer = new BufferedWriter(new FileWriter(inputFile, true));
+                                writer.append(sb.toString());
+                                writer.close();
+                                String success = "<h2 style=\"color: blue\">[SUCCESS]: Friend Delete. Here are the details\t\tName:" + line_array[0] + ", Surname: " + line_array[1] + ", Number: " + line_array[2] + "</h2>\n";
+                                response = StatusCode.OK.res + getHeaders(indexPage().length() + success.length()) + (indexPage() + success);
+                                clientWriter.write(response.getBytes());
+                                break;
+                            }
+                        }
+                        
+                        sc.close();
+                    }
+
+                    response = StatusCode.OK.res + getHeaders(indexPage().length() + fail.length()) + (indexPage() + fail);
+                    clientWriter.write(response.getBytes());
                 }
             }
         } catch (IOException e) {
@@ -318,7 +364,7 @@ public class ClientHandler extends Thread {
         return false;
     }
     public String UpdateFriendForm() {
-            return "<h2>Please enter the name and surname / the telephone number / both of the friend you are looking to Update Along With The updated Information:</h2>\n" +
+            return "<h2>Please enter the name ,surname and the telephone number of you are looking to Update Along With The updated Information:</h2>\n" +
                 "<form method=\"POST\">\n" +
                 "  <label for=\"fname\">First Name:</label>\n" +
                 "  <input type=\"text\" id=\"fname\" name=\"fname\" value=\"\"><br>\n" +
@@ -337,7 +383,16 @@ public class ClientHandler extends Thread {
     }
 
     public String DeleteFriendForm() {
-        return null;
+        return "<h2>Please enter the name, surname and  the telephone number of the friend you are looking to delete:</h2>\n" +
+        "<form method=\"POST\">\n" +
+        "  <label for=\"delete_fname\">First Name:</label>\n" +
+        "  <input type=\"text\" id=\"delete_fname\" name=\"delete_fname\" value=\"\"><br>\n" +
+        "  <label for=\"lname\">Last Name:</label>\n" +
+        "  <input type=\"text\" id=\"delete_lname\" name=\"delete_lname\" value=\"\"><br>\n" +
+        "  <label for=\"delete_number\">Telephone Number:</label>\n" +
+        "  <input type=\"text\" id=\"delete_number\" name=\"delete_number\" value=\"\"><br>\n" +
+        "  <input type=\"submit\" value=\"Submit\"></center>\n" +
+        "</form>";
 
     }
 }
