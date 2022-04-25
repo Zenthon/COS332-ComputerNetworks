@@ -6,8 +6,6 @@ import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.io.File;
-import java.io.IOException;
 
 public class ClientHandler extends Thread {
     public enum StatusCode {
@@ -106,7 +104,7 @@ public class ClientHandler extends Thread {
                     response = StatusCode.OK.res + getHeaders(DeleteFriendForm().length()) + DeleteFriendForm();
                     clientWriter.write(response.getBytes());
                 } else if (postParameters.equals("option=4")) {
-                    response = StatusCode.OK.res + getHeaders(SearchFriendForm().length()) + SearchFriendForm();
+                    response = StatusCode.OK.res + getHeaders(ListFriendForm().length()) + ListFriendForm();
                     clientWriter.write(response.getBytes());
                 } else if (postParameters.equals("option=5")) {
                     String message = "<h1>Thank you for using our services. Closing Connection!</h1>" + "<h1 style=\"color: blue\">[SUCCESS]: Connection closed.";
@@ -335,6 +333,19 @@ public class ClientHandler extends Thread {
                 "  <input type=\"submit\" class=\"btn btn-primary\" value=\"Submit\"></center>\n" +
                 "</form>";
     }
+    public String  ListFriendForm() throws IOException{
+        String res = "<h2 style=\"color: blue\"> Here are the details of Friends in Database\t\tName:"  + "</h2>\n";
+                File inputFile = new File("Database.txt");
+                try (Scanner sk = new Scanner(inputFile)) {
+                    String currentLine;
+                    while(sk.hasNext()){
+                        currentLine = sk.nextLine();
+                        res +="<h2 style=\"color: blue\">" + currentLine + "</h2>\n";
+                    }
+                }
+                return res;   
+   }
+  
 
     public String AddFriendForm() {
         return "<h2>Please enter the name, surname, and telephone number of your friend</h2>\n" +
@@ -393,6 +404,5 @@ public class ClientHandler extends Thread {
         "  <input type=\"text\" id=\"delete_number\" name=\"delete_number\" value=\"\"><br>\n" +
         "  <input type=\"submit\" value=\"Submit\"></center>\n" +
         "</form>";
-
     }
 }
