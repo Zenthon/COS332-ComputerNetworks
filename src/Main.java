@@ -1,5 +1,5 @@
-
-import java.io.IOException;
+import java.io.*;
+import java.net.Socket;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -9,6 +9,14 @@ public class Main {
 
         System.in.read();
         System.out.println("Door has been opened. Sensors and alarm triggered. Alerting owner");
+
+        String senderEmail = "u20536951@tuks.co.za";
+        String receiverEmail = "u20469366@tuks.co.za";
+
+        System.out.println("Sending email.....");
+        Socket serverSocket = new Socket("", 25);
+        PrintWriter clientWriter = new PrintWriter(serverSocket.getOutputStream(), true);
+        BufferedReader clientReader = new BufferedReader(new InputStreamReader(serverSocket.getInputStream()));
 
 
     }
