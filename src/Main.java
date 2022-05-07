@@ -8,7 +8,7 @@ public class Main {
         System.out.println("Waiting for door to open........");
 
         System.in.read();
-        System.out.println("Door has been opened. Sensors and alarm triggered.");
+        System.out.println("Door has been opened. Sensors and alarm triggered. Alerting owner");
 
 
     }
