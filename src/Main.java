@@ -14,9 +14,9 @@ public class Main {
         String receiverEmail = "u20469366@tuks.co.za";
 
         System.out.println("Sending email.....");
-        Socket serverSocket = new Socket("", 25);
-        PrintWriter clientWriter = new PrintWriter(serverSocket.getOutputStream(), true);
-        BufferedReader clientReader = new BufferedReader(new InputStreamReader(serverSocket.getInputStream()));
+        Socket socket = new Socket("", 25);
+        PrintWriter clientWriter = new PrintWriter(socket.getOutputStream(), true);
+        BufferedReader clientReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
 
     }
