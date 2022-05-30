@@ -1,9 +1,11 @@
+package proxy;
+
 import java.io.*;  
 import java.net.*;  
 public class proxyserver {  
   public static void main(String[] args) throws IOException {  
     try {  
-      String host = "muzwandile@DESKTOP-S246F3I";  
+      String host = "localhost";  
       int remoteport =  23;  
       int localport = 55540;  
       // Printing a start-up message  
@@ -56,15 +58,19 @@ public class proxyserver {
         // Get server streams.  
         final InputStream streamFromServer = server.getInputStream();  
         final OutputStream streamToServer = server.getOutputStream();  
-  
+        System.out.println(streamFromServer.toString());
+        System.out.println(streamToServer.toString());
         // a thread to read the client's requests and pass them  
         // to the server. A separate thread for asynchronous.  
         Thread t = new Thread() {  
-          public void run() {  
+          public void run() {
+            System.out.println("Starting To Read clients requests"); 
+
             int bytesRead;  
             try {  
               while ((bytesRead = streamFromClient.read(request)) != -1) {  
                 streamToServer.write(request, 0, bytesRead);  
+                System.out.println(streamFromClient.read(request));
                 streamToServer.flush();  
               }  
             } catch (IOException e) {  
@@ -86,7 +92,7 @@ public class proxyserver {
         int bytesRead;  
         try {  
           while ((bytesRead = streamFromServer.read(reply)) != -1) {  
-            streamToClient.write(reply, 0, bytesRead);  
+            streamToClient.write(reply, 0, bytesRead); 
             streamToClient.flush();  
           }  
         } catch (IOException e) {  
