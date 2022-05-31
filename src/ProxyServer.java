@@ -33,25 +33,54 @@ public class ProxyServer {
             Socket server = new Socket(host, remotePort);
             final InputStream serverReader = server.getInputStream();
             final OutputStream serverWriter = server.getOutputStream();
+            PrintWriter printWriter = new PrintWriter(server.getOutputStream(), true);
 
-            byte [] ss = new byte[1024];
-            Thread t = new Thread() {
-                public void run() {
-                    int bytesRead;
-                    try {
-                        while ((bytesRead = clientReader.read(request)) != -1) {
+
+            new Thread(() -> {
+                int bytesRead;
+                boolean justStarted = true;
+                try {
+                    String userInput = "";
+                    int count = 0;
+                    boolean dontPrint = false;
+
+                    while ((bytesRead = clientReader.read(request)) != -1) {
+                        count++;
+
+                        byte[] ss = new byte[bytesRead];
+                        System.arraycopy(request, 0, ss, 0, bytesRead);
+
+                        String character = new String(ss);
+                        if (character.charAt(0) != '\r' && count >= 7)
+                            userInput += character.charAt(0);
+                        else if (character.charAt(0) == '\r') {
+                            System.out.println(userInput);
+                            if (userInput.equals("ps"))
+                                dontPrint = true;
+                        }
+
+                        if (count <= 6 ) {
                             serverWriter.write(request, 0, bytesRead);
                             serverWriter.flush();
+                        } else {
+                            if (character.charAt(0) == '\r') {
+                                if (dontPrint) {
+                                    printWriter.println("");
+                                    dontPrint = false;
+                                } else {
+                                    if (userInput.contains("ishe"))  userInput = "ishe";
+                                    printWriter.println(userInput);
+                                }
+                                userInput = "";
+                            }
                         }
-                        serverWriter.close();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
-                }
-            };
 
-            t.start();
+                    serverWriter.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
 
             int bytesRead;
             try {
