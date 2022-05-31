@@ -3,10 +3,8 @@ import java.net.*;
 
 
 public class ProxyServer {
-    public static int client_number = 1;
-    public static String userInput = "";
     public  static byte[] request = new byte[1024];
-    public static void main(String ...args) throws IOException {
+    public static void main(String ...args) {
         try {
             String host = "localhost";
             int remotePort = 23;
@@ -38,7 +36,6 @@ public class ProxyServer {
 
             new Thread(() -> {
                 int bytesRead;
-                boolean justStarted = true;
                 try {
                     String userInput = "";
                     int count = 0;
@@ -90,7 +87,6 @@ public class ProxyServer {
                 }
             } catch (IOException e) {
             }
-
         }
     }
 }
