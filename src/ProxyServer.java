@@ -9,7 +9,7 @@ public class ProxyServer {
             String host = "localhost";
             int remotePort = 23;
             int localPort = 55555;
-
+            
             System.out.println("Starting proxy for " + host + ":" + remotePort + " on port " + localPort);
             runServer(host, remotePort, localPort);
         } catch (Exception e) {
@@ -20,14 +20,31 @@ public class ProxyServer {
 
     public static void runServer(String host, int remotePort, int localPort) throws IOException {
         ServerSocket serverSocket = new ServerSocket(localPort);
+       
 
         final byte[] reply = new byte[4096];
 
         while (true) {
             Socket client = serverSocket.accept();
+           
+			OutputStream os = client.getOutputStream();
+			PrintWriter pw = new PrintWriter(os, true);
+			pw.println("Please Enter the port you want to connect to:");
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(client.getInputStream()));
+			int str = Integer.parseInt(br.readLine());
+
+            remotePort = str;
+
+            pw.flush();
+            os.flush();
+
+
+		
+
             final InputStream clientReader = client.getInputStream();
             final OutputStream clientWriter = client.getOutputStream();
-
+           
             Socket server = new Socket(host, remotePort);
             final InputStream serverReader = server.getInputStream();
             final OutputStream serverWriter = server.getOutputStream();
@@ -53,6 +70,8 @@ public class ProxyServer {
                         else if (character.charAt(0) == '\r') {
                             System.out.println(userInput);
                             if (userInput.equals("ps"))
+                                dontPrint = true;
+                            if (userInput.equals("ls"))
                                 dontPrint = true;
                         }
 
