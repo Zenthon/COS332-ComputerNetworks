@@ -1,0 +1,5 @@
+netsh interface portproxy add v4tov4 listenport=51515 listenaddress=0.0.0.0 connectport=51515 connectaddress=172.18.115.158
+
+wsl hostname -I
+
+ipconfig
